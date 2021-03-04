@@ -1,0 +1,1355 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+
+using System.Net;
+using System.IO;
+using CAVEditLib;
+using System.Xml.Linq;
+using System.Windows.Threading;
+using System.Xml;
+using System.ComponentModel;
+using System.Threading;
+using System.Data;
+
+namespace WpfVideoUploader
+{
+    /// <summary>
+    /// Interaction logic for Status.xaml
+    /// </summary>
+    public partial class Status : Window
+    {
+
+        #region Fields
+        ListViewItem lvitem = null;
+        private const string LIBAV_PATH = "\\LibAV";
+        private const string CAVEDIT_LIB_NAME = "CAVEditLib.dll";
+
+        // TODO - -test these FTP related Variables
+        FtpWebRequest ftp = null;
+        FileStream fst = null;
+
+        private OutputOptions mOptionForm = null;
+        private ICAVConverter mConverter = null;
+        private VehicleInfo _oVehicleInfo = null;
+        private Status _oStatus = null;
+        private CAVEditLib.CThreadPriority mThreadPriority = CThreadPriority.ctpLower;
+        private int mThreadCount = 1;
+
+        bool _uploadStarted = false;
+        bool _encoding = false;
+        bool _firstLoad = true;
+        bool _firstTime = true;
+        bool _isFinished = true;
+        bool _isException = false;
+
+        bool uploadCanceled = false;
+        bool encodingCanceled = false;
+
+        string strOutputFile = string.Empty;
+        string strUploadedVehicleKey = string.Empty;
+        string strUploadedInFile = string.Empty;
+
+        string strUploadedOutFile = string.Empty;
+
+        string strRoofTopNotify = string.Empty;
+        string strVehicleKeyNotify = string.Empty;
+        string strGuidNotify = string.Empty;
+        string strVideoTitleNotify = string.Empty;
+        string strVideoDescNotify = string.Empty;
+        string strIsDefaultNotify = string.Empty;
+
+        long progress = 0;
+        int targetVideoWidth = 0;
+        int targetVideoHeight = 0;
+        VehicleInfoCollection encodingVehicleInfolist;
+        VehicleInfoCollection uploadingVehicleInfoList;
+        VehicleInfoCollection uploadedVehicleInfolist;
+
+        private BackgroundWorker bgWorker;
+        DispatcherTimer tmrUpload = new DispatcherTimer();
+        #endregion
+
+        #region Properties
+        public Status OStatus
+        {
+            get
+            {
+                return _oStatus;
+            }
+            set
+            {
+                _oStatus = value;
+            }
+        }
+
+        public VehicleInfo OVehicleInfo
+        {
+            get
+            {
+                return _oVehicleInfo;
+            }
+            set
+            {
+                _oVehicleInfo = value;
+            }
+        }
+
+        private Home _ohome = null;
+        public Home OHome
+        {
+            get
+            {
+                return _ohome;
+            }
+            set
+            {
+                _ohome = value;
+            }
+        }
+        #endregion
+
+        #region ConStructor
+        public Status()
+        {
+            InitializeComponent();
+
+            bgWorker = ((BackgroundWorker)this.FindResource("bgWorker"));
+            tmrUpload.Interval = new TimeSpan(3000);
+            tmrUpload.Tick += new EventHandler(tmrUpload_Tick);
+
+            encodingVehicleInfolist = new VehicleInfoCollection();
+            uploadingVehicleInfoList = new VehicleInfoCollection();
+            uploadedVehicleInfolist = new VehicleInfoCollection();
+
+            lvEncodingQueue.DataContext = encodingVehicleInfolist;
+            lvUploading.DataContext = uploadingVehicleInfoList;
+            lvVideoUploaded.DataContext = uploadedVehicleInfolist;
+        }
+        #endregion
+
+        #region Events
+
+        private void Items_CurrentChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Hidden;
+            e.Handled = true;
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
+
+        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+            int i = 0;
+            int strProgress = 0;
+            long currentDuration = 0;
+            long totalDuration = 0;
+
+            _isFinished = false;
+            _isException = false;
+
+            ICProgressInfo progressInfo = null;
+            ICTerminateInfo terminateInfo = null;
+            //Vehicle obj = new Vehicle();
+
+            try
+            {
+
+                if (lvEncodingQueue.Items.Count > 0)
+                { 
+                    Dispatcher.Invoke(new Action(() => lblVehicleKeyValue.Content = encodingVehicleInfolist[0].VehicleKey));
+                }
+
+                Dispatcher.Invoke(new Action(() => lblInputFileNameValue.Content = System.IO.Path.GetFileName(mConverter.OutputOptions.FileName)));
+                Thread.Sleep(2000);
+
+                if (mConverter == null || mThreadCount <= 0)
+                {
+                    return;
+                }
+
+                while (!_isFinished)
+                {
+                    Thread.Sleep(1000);
+
+                    progressInfo = mConverter.get_ProgressInfo(i);
+                    terminateInfo = mConverter.get_TerminateInfo(i);
+
+                    currentDuration = progressInfo.CurrentDuration;
+                    totalDuration = progressInfo.TotalDuration;
+
+                    if (totalDuration > 0)
+                    {
+                        strProgress = Convert.ToInt32((currentDuration * 100 / totalDuration));
+
+                        bgWorker.ReportProgress(strProgress);
+
+                        if (strProgress < 0 || strProgress >= 99)
+                        {
+                            bgWorker.ReportProgress(100);
+                        }
+                    }
+                    _isFinished = terminateInfo.Finished;
+                    _isException = terminateInfo.Exception;
+
+                    if (_isException)
+                        break;
+                }
+
+                if (_isException)
+                {
+                    return;
+                }
+
+                if (_isFinished)
+                {
+                    Dispatcher.Invoke(new Action(() => lblVehicleKeyValue.Content = ""));
+                    Dispatcher.Invoke(new Action(() => lblInputFileNameValue.Content = ""));
+
+                    OStatus.AddUploadingQueue(OVehicleInfo);
+
+                    if (lvUploading.Items.Count > 0)
+                    {
+                        //ListViewItem lvItem=null;
+                        //Dispatcher.Invoke(new Action(() => lvItem = lvUploading.Items[0] as ListViewItem));
+                        //Dispatcher.Invoke(new Action(() =>lvItem.Foreground=Brushes.Blue));
+                    }
+
+                    OStatus.RemoveEncodingQueueItem(OVehicleInfo.VehicleKey);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("bgWorker_DoWork: " + ex.Message);
+            }
+        }
+
+        private void bgWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            try
+            {
+                pbConvertProgress.Value = e.ProgressPercentage;
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("bgWorker_ProgressChanged: " + ex.Message);
+            }
+        }
+
+        private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            try
+            {
+                pbConvertProgress.Value = 0;
+                mConverter = null;
+
+                tmrUpload.Start();
+
+                Thread.Sleep(500);
+
+                if (!e.Cancelled)
+                {
+                    if (lvEncodingQueue.Items.Count > 0)
+                    {
+                        BeginEncoding();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("bgWorker_RunWorkerCompleted: " + ex.Message);
+            }
+        }
+
+        // ///// <summary>
+        // ///// Start uploading using timer
+        // ///// </summary>
+        // ///// <param name="sender"></param>
+        // ///// <param name="e"></param>
+        private void tmrUpload_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!_uploadStarted && lvUploading.Items.Count > 0)
+                {
+                    Thread th = new Thread(new ThreadStart(StartUpload));
+                    th.IsBackground = true;
+                    th.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("tmrUpload_Tick: " + ex.Message);
+            }
+        }
+
+        private void btnClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (lvEncodingQueue.Items.Count == 0 &&
+                    lvUploading.Items.Count == 0 &&
+                    lvVideoUploaded.Items.Count == 0)
+                {
+                    return;
+                }
+
+                Common.WriteLog("Info: btnClearAll_Click: Clearing all the lists");
+
+                MessageBoxResult msgResult = MessageBox.Show(ResourceTxt.ClearAllListsMessage, "Clear Items", MessageBoxButton.YesNo);
+
+                if (msgResult == MessageBoxResult.No)
+                {
+                    return;
+                }
+
+                if (encodingVehicleInfolist.Count > 0)
+                {
+                    encodingCanceled = true;
+                    ClearLists.DeleteItemsFromList(ref encodingVehicleInfolist, false);
+                    lvEncodingQueue.Items.Refresh();
+                }
+
+                if (uploadingVehicleInfoList.Count > 0)
+                {
+                    uploadCanceled = true;
+                    ResetProgressBar();
+                    ClearLists.DeleteItemsFromList(ref uploadingVehicleInfoList, true);
+                    lvUploading.Items.Refresh();
+                }
+
+                if (uploadedVehicleInfolist.Count > 0)
+                {
+                    ClearLists.DeleteItemsFromList(ref uploadedVehicleInfolist, false);
+                    lvVideoUploaded.Items.Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("Status_btnClearAll_Click:" + ex.Message);
+            }
+        }
+
+
+        private void upLoadingChkBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (uploadingVehicleInfoList[0].IsSelected)
+                uploadingVehicleInfoList[0].IsSelected = false;
+            lvUploading.Items.Refresh();
+        }
+
+        private void btnDelUploading_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = uploadingVehicleInfoList.Count; i >1; i--)
+            {
+                if (uploadingVehicleInfoList[i-1].IsSelected)
+                {
+                    RemoveRecordFromFile(uploadingVehicleInfoList[i-1].OutputFileName);
+                    uploadingVehicleInfoList.Remove(uploadingVehicleInfoList[i-1]);
+                }
+            }
+            lvUploading.Items.Refresh();
+            //if (lvUploading.Items.Count > 0)
+            //{
+            //    lvitem = lvUploading.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+            //}
+        }
+
+        private void encodingCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (encodingVehicleInfolist[0].IsSelected)
+                encodingVehicleInfolist[0].IsSelected = false;
+            lvEncodingQueue.Items.Refresh();
+        }
+
+        private void btnDelEncoding_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = encodingVehicleInfolist.Count; i > 1; i--)
+            {
+                if (encodingVehicleInfolist[i-1].IsSelected)
+                {
+                    encodingVehicleInfolist.Remove(uploadingVehicleInfoList[i-1]);
+                }
+            }
+            lvEncodingQueue.Items.Refresh();
+        }
+
+        #endregion
+       
+
+        public void AddEncodingQueue(VehicleInfo poVehicleInfo)
+        {
+            try
+            {
+                encodingVehicleInfolist.Add(poVehicleInfo);
+                lvEncodingQueue.Items.Refresh();
+                if (!_encoding)
+                {
+                    BeginEncoding();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("AddEncodingQueue: " + ex.Message);
+            }
+        }
+
+        public void RemoveEncodingQueueItem(string keyItem)
+        {
+            int countItems = 0;
+
+            try
+            {
+                countItems = encodingVehicleInfolist.Count;
+               //Dispatcher.Invoke(new Action(() => countItems = lvEncodingQueue.Items.Count));
+                if (countItems > 0)
+                {
+                    encodingVehicleInfolist.RemoveAt(0);
+                   
+                    Dispatcher.Invoke(new Action(() =>lvEncodingQueue.Items.Refresh()));
+                    //Dispatcher.Invoke(new Action(() => lvEncodingQueue.Items.RemoveAt(0)));
+                }
+
+                Dispatcher.Invoke(new Action(() => countItems = lvEncodingQueue.Items.Count));
+                if (countItems > 0)
+                {
+                  // Dispatcher.Invoke(new Action(() => lvEncodingQueue.ItemTemplate);
+                }
+
+                if (lvEncodingQueue.Items.Count == 0)
+                {
+                    _encoding = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("RemoveEncodingQueueItem: " + ex.Message);
+            }
+        }
+
+        public void RemoveUploadingQueueItem()
+        {
+            int countItems = 0;
+            string strOutFileName = string.Empty;
+
+            try
+            {
+               Dispatcher.Invoke(new Action(() => countItems = lvUploading.Items.Count));
+                if (countItems > 0)
+                {
+                   Dispatcher.Invoke(new Action(() => strOutFileName = uploadingVehicleInfoList[0].OutputFileName));
+                   uploadingVehicleInfoList.RemoveAt(0);
+                   Dispatcher.Invoke(new Action(() => lvUploading.Items.Refresh()));
+
+                   //ListViewItem lvItem = null;
+                   //Dispatcher.Invoke(new Action(() => lvItem = lvUploading.Items[0] as ListViewItem));
+                   //Dispatcher.Invoke(new Action(() => lvItem.Foreground = Brushes.Blue));
+                   
+                    // Remove from XML file also
+                    RemoveRecordFromFile(strOutFileName);
+                }
+
+                Dispatcher.Invoke(new Action(() => countItems = lvUploading.Items.Count));
+                if (countItems > 0)
+                {
+                    //Dispatcher.Invoke(new Action(() => lvUploading.Items..BackColor = Color.YellowGreen));
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("RemoveUploadingQueueItem: " + ex.Message);
+            }
+        }
+
+       // /// <summary>
+       // /// Remove the Uploaded file from XML
+       // /// </summary>
+       // /// <param name="OutputFileName"></param>
+        private void RemoveRecordFromFile(string OutputFileName)
+        {
+            try
+            {
+                string strUploadFile = Common.UploadRecordFile;
+
+                if (string.IsNullOrEmpty(strUploadFile))
+                {
+                    Common.WriteLog("RemoveRecordFromFile: failed to get the Upload Record file name");
+                    return;
+                }
+
+                if (!File.Exists(strUploadFile))
+                {
+                    Common.WriteLog("RemoveRecordFromFile: Upload Record file " + strUploadFile + " not found");
+                    return;
+                }
+
+                XElement doc = XElement.Load(strUploadFile);
+
+                var result = from videos in doc.Descendants("File") where videos.Element("OutputFileName").Value == OutputFileName select videos;
+
+                foreach (XElement xEle in result.ToList())
+                {
+                    xEle.Remove();
+                }
+
+                doc.Save(strUploadFile);
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog(ResourceTxt.RemovingXMLFile + ex.Message);
+            }
+        }
+
+        public void AddUploadingQueue(VehicleInfo poVehicleInfo)
+        {
+            //ListViewItem lvItem = null;
+
+            try
+            {
+                if (lvEncodingQueue.Items.Count > 0)
+                {
+                    uploadingVehicleInfoList.Add(poVehicleInfo);
+                    Dispatcher.Invoke(new Action(() => lvUploading.Items.Refresh()));
+                    AddRecordToFile();
+                }
+            }
+            catch (Exception ex)
+            {
+                lblUploadError.Visibility =Visibility.Visible;
+                lblUploadError.Content = ResourceTxt.UploadError_AddQ;
+
+                Common.WriteLog("AddUploadingQueue: " + ex.Message);
+            }
+        }
+
+       // /// <summary>
+       // /// Add Records from if there is any pending file to upload from previous Run
+       // /// </summary>
+        public void AddUploadingQueueFromFile()
+        {
+            try
+            {
+                // Call this only once
+                if (_firstLoad)
+                {
+                    _firstLoad = false;
+
+                    string strUploadFile = Common.UploadRecordFile;
+
+                    if (!File.Exists(strUploadFile))
+                        return;
+
+                    XElement doc = XElement.Load(strUploadFile);
+                    //ListViewItem lvItem = null;
+
+                    var pending = from videos in doc.Descendants("File") select videos;
+
+                    foreach (XElement xElePending in pending.ToList())
+                    {
+                        string strVehicleKey = xElePending.Element(XNAME.VEHICLE_KEY).Value;
+                        string strSourceFile = xElePending.Element(XNAME.SOURCE_FILE_NAME).Value;
+                        string strOutFileName = xElePending.Element(XNAME.OUTPUT_FILE_NAME).Value;
+
+                        // Add Rooftop, Title and Desc also
+                        string strRoofTop = xElePending.Element(XNAME.ROOF_TOP_KEY).Value;
+                        string strVideoTitle = xElePending.Element(XNAME.VIDEO_TITLE).Value;
+                        string strDesc = xElePending.Element(XNAME.DESCRIPTION).Value;
+                        string strIsDefault = xElePending.Element(XNAME.IS_DEFAULT).Value;
+
+                        VehicleInfo uploadingVInfo = new VehicleInfo();
+                        uploadingVInfo.VehicleKey = strVehicleKey;
+                        uploadingVInfo.InputFileName = strSourceFile;
+                        uploadingVInfo.OutputFileName = strOutFileName;
+                        uploadingVInfo.RooftopKey = strRoofTop;
+                        uploadingVInfo.VideoTitle = strVideoTitle;
+                        uploadingVInfo.Description = strDesc;
+                        uploadingVInfo.IsDefault = strIsDefault;
+                        uploadingVehicleInfoList.Add(uploadingVInfo);
+                        lvUploading.Items.Refresh();
+
+                        //lvUploading.Items.Add(strVehicleKey);
+
+                        //lvItem = lvUploading.Items.Add(strVehicleKey);
+                        //lvItem.SubItems.Add(strSourceFile);
+                        //lvItem.SubItems.Add(strOutFileName);
+
+                        //// Add Rooftop, Title and Desc also
+                        //lvItem.SubItems.Add(strRoofTop);
+                        //lvItem.SubItems.Add(strVideoTitle);
+                        //lvItem.SubItems.Add(strDesc);
+                        //lvItem.SubItems.Add(strIsDefault);
+                    }
+
+                    tmrUpload.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("AddUploadingQueueFromFile: " + ex.Message);
+                lblUploadError.Visibility=Visibility.Visible;
+
+                lblUploadError.Content = ResourceTxt.UploadError_FileLoad;
+            }
+        }
+
+       // /// <summary>
+       // /// Add the Uploading file to XML
+       // /// </summary>
+        private void AddRecordToFile()
+        {
+            try
+            {
+                string strUploadFile = Common.UploadRecordFile;
+
+                if (!File.Exists(strUploadFile))
+                {
+                    XmlDocument XDoc = new XmlDocument();
+                    XmlElement XElemRoot = XDoc.CreateElement(XNAME.UPLOADING_FILE);
+                    XDoc.AppendChild(XElemRoot);
+                    XDoc.Save(strUploadFile);
+                }
+
+                XElement doc = XElement.Load(strUploadFile);
+
+
+                doc.Add(
+                new XElement(XNAME.FILE,
+                new XElement(XNAME.VEHICLE_KEY, encodingVehicleInfolist[0].VehicleKey),
+                new XElement(XNAME.SOURCE_FILE_NAME,encodingVehicleInfolist[0].InputFileName),
+                new XElement(XNAME.OUTPUT_FILE_NAME, encodingVehicleInfolist[0].OutputFileName),
+                new XElement(XNAME.ROOF_TOP_KEY, encodingVehicleInfolist[0].RooftopKey),      // Add Rooftop, Title, Desc
+                new XElement(XNAME.VIDEO_TITLE, encodingVehicleInfolist[0].VideoTitle),
+                new XElement(XNAME.DESCRIPTION, encodingVehicleInfolist[0].Description),
+                new XElement(XNAME.IS_DEFAULT, encodingVehicleInfolist[0].IsDefault)));
+                doc.Save(strUploadFile);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("AddRecordToFile: " + ex.Message);
+                Common.WriteLog("AddRecordToFile: " + ex.Message);
+            }
+        }
+
+        public void AddUploadedQueue(VehicleInfo poVehicleInfo)
+        {
+           // ListViewItem lvItem = null;
+            uploadedVehicleInfolist.Add(poVehicleInfo);
+           // lvVideoUploaded.Items.Add(obj.VehicleKey.Contains(Content.ToString));
+            try
+            {
+                Dispatcher.Invoke( new Action(() => lvVideoUploaded.Items.Refresh()));
+                //Dispatcher.Invoke(new Action(() => lvVideoUploaded.Items.Add(lvUploading.Items.Add(INDEX.INPUT_FILE_NAME).ToString())));
+                //Dispatcher. Invoke(new Action(() =>lvVideoUploaded.Items.Add(lvUploading.Items.Add(INDEX.OUTPUT_FILE_NAME).ToString())));
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("AddUploadedQueue: " + ex.Message);
+            }
+        }
+
+        public void BeginEncoding()
+        {
+            _encoding = true;
+
+            try
+            {
+                ICTerminateInfo terminateInfo = null;
+                mOptionForm = new OutputOptions();
+
+                if (!OpenConverter(true))
+                {
+                    Common.WriteLog("BeginEncoding: " + ResourceTxt.ErrorOpeningConverter);
+                    return;
+                }
+
+                string Aseed = ResourceTxt.Aseed;
+                string ALiscenceKey = ResourceTxt.ALiscenceKey;
+
+                mConverter.SetLicenseKey(Aseed, ALiscenceKey);
+                mOptionForm.SetConverter(mConverter);
+
+                VehicleInfo vInfo = encodingVehicleInfolist[0];
+
+
+                string strInputFileName = vInfo.InputFileName;//lvEncodingQueue.Items.Contains(INDEX.INPUT_FILE_NAME).ToString();
+                string strOutputFileName = vInfo.OutputFileName;//lvEncodingQueue.Items[INDEX.OUTPUT_FILE_NAME].ToString();
+                targetVideoWidth =Convert.ToInt32(vInfo.TargetVideoWidth);//lvEncodingQueue.Items.Add((INDEX.VIDEO_WIDTH).ToString());
+                targetVideoHeight = Convert.ToInt32(vInfo.TargetVideoHeight);//lvEncodingQueue.Items.Add((INDEX.VIDEO_HEIGHT).ToString());
+
+                AddTask(strInputFileName);
+                StartConversion();
+
+                terminateInfo = mConverter.get_TerminateInfo(0);
+                if (terminateInfo != null)
+                {
+                    int taskIndex = terminateInfo.TaskIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("BeginEncoding:" + ex.Message);
+            }
+        }
+
+        public void VideoConverter()
+        {
+            OVehicleInfo.Converter = mConverter;
+
+            // Add pending uploadable files from the last cycle to Uploading queue
+            AddUploadingQueueFromFile();
+
+            OStatus.AddEncodingQueue(OVehicleInfo);
+            //OStatus.Refresh();
+        }
+
+        private bool OpenConverter(bool first)
+        {
+            try
+            {
+                mConverter = new CAVEditLib.CAVConverter();
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                if (first)
+                {
+                    if (ex.ErrorCode == -2147221164)
+                    {
+                        if (!RegisterCAVEditLib())
+                        {
+                            return false;
+                        }
+                        return OpenConverter(false);
+                    }
+                    else
+                    {
+                        Common.WriteLog("OpenConverter:" + ex.Message);
+                        return false;
+                    }
+                }
+                else
+                {
+                    Common.WriteLog("OpenConverter:" + ex.Message);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("OpenConverter: " + ResourceTxt.ErrorOpeningConverter + ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void AddTask(string FileName)
+        {
+            try
+            {
+                if (mConverter == null)
+                {
+                    return;
+                }
+
+                if (!mConverter.AVLibLoaded())
+                {
+                    string path = null;
+
+                    path = System.Windows.Forms.Application.StartupPath;
+                    path += LIBAV_PATH;
+
+                    if (!mConverter.LoadAVLib(path))
+                    {
+                        Common.WriteLog("AddTask: " + ResourceTxt.ErrorAddingTask);
+                        return;
+                    }
+                }
+
+                if (!mConverter.AVPrope.LoadFile(FileName, ""))
+                {
+                    Common.WriteLog("AddTask: " + ResourceTxt.ErrorFileLoading);
+
+                    Common.WriteLog("AddTask: " + ResourceTxt.EncodingErrorMsg1 + " " + FileName + ResourceTxt.EncodingErrorMsg2);
+                    Common.WriteLog("AddTask: " + mConverter.AVPrope.LastErrMsg);
+                    lblError.Content = ResourceTxt.EncodingErrorMsg1 + " " + System.IO.Path.GetFileName(FileName) + ResourceTxt.EncodingErrorMsg2;
+                    lblError.Visibility =Visibility.Visible;
+
+                    RemoveEncodingQueueItem(lblVehicleKeyValue.Content.ToString());
+                    lblVehicleKeyValue.Content = string.Empty;
+
+                    return;
+                }
+
+                //try
+                //{
+                mOptionForm.SetConverter(mConverter);
+
+                mOptionForm.GetInputOptions();
+                // pass width and Height to decide Padding and Cropping
+                mOptionForm.GetOutputOptions(targetVideoWidth, targetVideoHeight);
+
+                AddFile(mConverter.InputOptions, mConverter.OutputOptions);
+
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("AddTask: " + ResourceTxt.ErrorFileLoading + ex.Message);
+            }
+            finally
+            {
+                mConverter.AVPrope.CloseFile();
+            }
+        }
+
+        private void AddFile(ICInputOptions inputOptions, ICOutputOptions outputOptions)
+        {
+            int taskIndex = 0;
+
+            if (mConverter == null || inputOptions == null || outputOptions == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // TODO - verify the file name and Hard Coded file extension
+                Vehicle obj = new Vehicle();
+
+
+
+                string strOutputFileName = encodingVehicleInfolist[0].OutputFileName;
+                string OutFileLocation = Common.GetVideoSettingInfo("OutputVideoLocation");
+
+                if (string.IsNullOrEmpty(OutFileLocation))
+                {
+                    System.Windows.Forms.MessageBox.Show("Output video location is not correct.\nPlease check the settings and give the valid path");
+                    return;
+                }
+
+                strOutputFile = OutFileLocation + "\\" + strOutputFileName + ".flv";
+                outputOptions.FileName = strOutputFile;
+
+                taskIndex = mConverter.AddTask(inputOptions.FileName, outputOptions.FileName);
+                if (taskIndex < 0)
+                {
+                    Common.WriteLog("AddFile: " + ResourceTxt.ErrorAddingTask);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("AddFile: " + ex.Message);
+            }
+        }
+
+        public void StartConversion()
+        {
+            try
+            {
+                if (mConverter == null)
+                {
+                    return;
+                }
+
+                mConverter.ThreadPriority = mThreadPriority;
+                mConverter.LogPath = Common.LogFile;
+                mConverter.Start(mThreadCount);
+
+                if (bgWorker.IsBusy)
+                {
+                    bgWorker.WorkerSupportsCancellation = true;
+                }
+                else
+                {
+                    bgWorker.RunWorkerAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("StartConversion: " + ex.ToString());
+            }
+        }
+
+        private bool RegisterCAVEditLib()
+        {
+            bool ret = true;
+            try
+            {
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+
+                string libPath =System.Windows.Forms.Application.StartupPath + "\\" + CAVEDIT_LIB_NAME;
+                string regsvr32Path = Environment.SystemDirectory + "\\regsvr32.exe";
+
+                startInfo.Arguments = "\"" + libPath + "\"" + " /s";
+                startInfo.FileName = regsvr32Path;
+
+                // TODO - Check the alternate for this.
+                // This required because to register the DLL, user needs admin rights
+                // This is the one time process in the application life cycle 
+                // or till the corresponding registry availabe
+                startInfo.Verb = "runas";
+
+                System.Diagnostics.Process regProcess = System.Diagnostics.Process.Start(startInfo);
+                regProcess.WaitForExit();
+            }
+            catch (Exception e)
+            {
+                ret = false;
+            }
+
+            return ret;
+        }
+
+        private void StartUpload()
+        {
+            try
+            {
+                if (!_uploadStarted)
+                {
+                    _uploadStarted = true;
+
+                    while (lvUploading.Items.Count > 0)
+                    {
+                        string strFileToUpload = null;
+                        string OutFileLocation = null;
+                        
+                        //Dispatcher.Invoke(new Action(() => lvitem = lvUploading.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem));
+                        //Dispatcher.Invoke(new Action(() =>lvitem.Foreground  = Brushes.Blue));
+
+                        OutFileLocation = Common.GetVideoSettingInfo("OutputVideoLocation");
+
+                         Dispatcher.Invoke(new Action(() => strFileToUpload = OutFileLocation + "\\" + uploadingVehicleInfoList[0].OutputFileName + ".flv"));
+
+            
+
+                        if (!UploadFile(strFileToUpload))
+                        {
+                            //break;
+                            if (lvUploading.Items.Count > 0)
+                            {
+                                uploadingVehicleInfoList.RemoveAt(0);
+                                Dispatcher.Invoke(new Action(() => lvUploading.Items.Refresh()));
+                            }
+
+                            Dispatcher.Invoke(new Action(() => lblUploadError.Visibility = Visibility.Visible));
+                        }
+                        else
+                        {
+                            if(!uploadCanceled)
+                                RemoveRecord(strFileToUpload);
+                        }
+                    }
+                    _uploadStarted = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("StartUpload: " + ex.Message);
+                return;
+            }
+        }
+
+        public bool UploadFile(string fileName)
+        {
+            //FileStream fst = null;
+            Stream rest = null;
+            int loopCount = 0;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime;
+            TimeSpan duration;
+
+            Common.WriteLog("Uploading file: " + fileName);
+
+            try
+            {
+                Dispatcher.Invoke(new Action(() => lblUploadError.Visibility = Visibility.Hidden));
+
+                Dispatcher.Invoke(new Action(() => lblUploadingVehiceKey.Content = uploadingVehicleInfoList[0].VehicleKey));
+                Dispatcher.Invoke(new Action(() => lblUploadingFileName.Content = System.IO.Path.GetFileName(uploadingVehicleInfoList[0].OutputFileName)));
+
+                string ftpPath = ResourceTxt.FTPPath;
+                string userName = ResourceTxt.UserName;
+                string password = ResourceTxt.Password;
+
+                string flvFileName = System.IO.Path.GetFileName(fileName);
+
+                uploadCanceled = false;
+
+                if (!File.Exists(fileName))
+                {
+                    //RemoveRecord(FileName);
+                    Common.WriteLog("UploadFile: While uploading " + fileName + " was not found, so deleted from the Que also from XML file list");
+
+                    Dispatcher.Invoke(new Action(() => lblUploadError.Content = flvFileName + " " + ResourceTxt.FileNotFound));
+                    Dispatcher.Invoke(new Action(() => lblUploadError.Visibility = Visibility.Visible));
+
+                    return true;
+                }
+
+                //TODO check commented by sathish
+                //string ftpfullpath = "ftp://" + ftpPath + @"/" + flvFileName;
+
+                string ftpfullpath = ftpPath + @"/" + flvFileName;
+
+                // TODO
+                //FtpWebRequest ftp = (FtpWebRequest)FtpWebRequest.Create(ftpfullpath);
+                ftp = (FtpWebRequest)FtpWebRequest.Create(ftpfullpath);
+
+                if (!Common.IsConnectedToInternet())
+                {
+                    Dispatcher.Invoke(new Action(() => lblUploadError.Content = ResourceTxt.NoInternet));
+                    Dispatcher.Invoke(new Action(() => lblUploadError.Visibility = Visibility.Visible));
+                    return false;
+                }
+
+                ftp.Credentials = new NetworkCredential(userName, password);
+                ftp.KeepAlive = true;
+                ftp.UseBinary = true;
+                ftp.UsePassive = true;
+                ftp.Method = WebRequestMethods.Ftp.UploadFile;
+                ftp.Timeout = Timeout.Infinite;
+
+                fst = new FileStream(fileName, FileMode.Open);
+                long fileLenght = fst.Length;
+                double fileLenthInMb = System.Math.Round((double)(fst.Length / 1024), 4);
+                Dispatcher.Invoke(new Action(() => lblUploadingFileSize.Content = fileLenthInMb.ToString() + "KB"));
+
+                const int bufferLength = 2048;//1024;
+                byte[] buffer = new byte[bufferLength];
+                long count = 0;
+                int readBytes = 0;
+
+                rest = ftp.GetRequestStream();
+
+
+                Dispatcher.Invoke(new Action(() => lblUploadError.Visibility = Visibility.Hidden));
+
+                // TODO - use using method for stream
+                do
+                {
+
+                    if (count < fst.Length)
+                    {
+                        endTime = DateTime.Now;
+                        duration = endTime - startTime;
+                        if ((long)duration.Milliseconds != 0)
+                        {
+                            long inASec = (long)1000 / (long)duration.Milliseconds;
+                            long uploadSpeed = (long)Math.Round((double)64 * inASec, 2);
+                            Dispatcher.Invoke(new Action(() => lblSpeed.Content = uploadSpeed.ToString() + "kbps"));
+                        }
+                    }
+                    readBytes = fst.Read(buffer, 0, bufferLength);
+                    rest.Write(buffer, 0, readBytes);
+                    count += readBytes;
+                    double uploadedSize = Math.Round((double)(count / 1024), 4);
+                    Dispatcher.Invoke(new Action(() => lblCompUploadingSize.Content = uploadedSize.ToString() + "KB"));
+                    progress = (count * 100) / fileLenght;
+                    startTime = DateTime.Now;
+                    Dispatcher.Invoke(new Action(() => this.pbUploadProgress.Value = Convert.ToInt32(progress)));
+                }
+                while (readBytes != 0 && !uploadCanceled);
+                //while (readBytes != 0);
+
+                Dispatcher.Invoke(new Action(() => lblUploadingFileSize.Content = "0KB"));
+                Dispatcher.Invoke(new Action(() => lblCompUploadingSize.Content = "0KB"));
+                Dispatcher.Invoke(new Action(() => lblSpeed.Content = "0kbps"));
+                progress = 0;
+
+                _firstTime = true;
+
+                if (uploadCanceled)
+                {
+                    Common.WriteLog("Info: UploadFile: Uploading Canceled");
+                    ResetProgressBar();
+
+                    return true;
+                }
+
+                // Get the response
+                /*
+                FtpWebResponse ftpResponse = (FtpWebResponse)ftp.GetResponse();
+                FtpStatusCode statusCode = ftpResponse.StatusCode;
+                string statusDesc = ftpResponse.StatusDescription;
+
+                if (statusCode == FtpStatusCode.ClosingData)
+                {
+                    Common.WriteLog("UploadFile: File " + FileName + " Uploaded Successfully");
+                }
+                else
+                {
+                    Invoke(new Action(() => lblUploadError.Visible = true));
+                    Common.WriteLog("UploadFile: Failed to upload file " + FileName);
+                    Common.WriteLog("UploadFile: " + statusCode + "-" + statusDesc);
+                }
+
+                ftpResponse.Close();
+                */
+
+                //RemoveRecord(FileName);
+                return true;
+            }
+            catch (System.UriFormatException ex)
+            {
+                Dispatcher.Invoke(new Action(() => lblUploadError.Content = ResourceTxt.FTPUriError));
+
+                if (_firstTime)
+                {
+                    Common.WriteLog("UploadFile: URI Format Exception, " + ex.Message);
+                    _firstTime = false;
+                }
+
+                return false;
+            }
+            catch (System.Net.WebException ex)
+            {
+                Dispatcher.Invoke(new Action(() => lblUploadError.Content = ResourceTxt.UnableToConnect));
+
+                if (_firstTime)
+                {
+                    Common.WriteLog("UploadFile: Web Exception, " + ex.Message);
+                    _firstTime = false;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.Invoke(new Action(() => lblUploadError.Content = ResourceTxt.UploadError));
+
+                if (_firstTime)
+                {
+                    Common.WriteLog("UploadFile: " + ex.Message);
+                    _firstTime = false;
+                }
+
+                return false;
+            }
+            finally
+            {
+                if (fst != null)
+                {
+                    fst.Close();
+                    fst = null;
+                }
+
+                if (rest != null)
+                {
+                    rest.Close();
+                    rest = null;
+                }
+            }
+        }
+
+        private void RemoveRecord(string FileName)
+        {
+            try
+            {
+                // Update Pending Flag
+                Common.OHome.UpdatePendingField(uploadingVehicleInfoList[0].VehicleKey);//lvUploading.Items.Add(INDEX.VEHICLE_KEY).ToString());
+
+                // Notify Server
+                GetDataToNotify();
+                NotifyCreateVideo();
+                NotifyUploadVideo();
+
+                ResetProgressBar();
+
+                AddUploadedQueue(uploadingVehicleInfoList[0]);
+                RemoveUploadingQueueItem();
+
+                RemoveOutputFile(FileName);
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("RemoveRecord: " + ex.Message);
+            }
+        }
+
+        private void ResetProgressBar()
+        {
+            Dispatcher.Invoke(new Action(() => this.pbUploadProgress.Value = 0));
+            Dispatcher.Invoke(new Action(() => lblUploadingVehiceKey.Content = ""));
+            Dispatcher.Invoke(new Action(() => lblUploadingFileName.Content = ""));
+        }
+
+        private void GetDataToNotify()
+        {
+            strRoofTopNotify = uploadingVehicleInfoList[0].RooftopKey;
+            strVehicleKeyNotify = uploadingVehicleInfoList[0].VehicleKey; ;
+            strGuidNotify = System.IO.Path.GetFileNameWithoutExtension(uploadingVehicleInfoList[0].OutputFileName);
+            strVideoTitleNotify = uploadingVehicleInfoList[0].VideoTitle; ;
+            strVideoDescNotify = uploadingVehicleInfoList[0].Description;
+            strIsDefaultNotify = uploadingVehicleInfoList[0].IsDefault;
+        }
+
+        private bool NotifyCreateVideo()
+        {
+            try
+            {
+                // "ACTION=CREATEVIDEO"
+                /*
+                http://admin.flickfusion.net/ava/php/appxml.php?
+                ACTION=CREATEVIDEO&rooftop_key=[ROOFTOP_KEY]&VEHKEY=[VEHICLEKEY]
+                &VIDEOGUID=[VIDEOGUID]&NAME=[VIDEO_NAME]&DESC=[VIDEO_DESC]
+                */
+
+                //var encoding = new ASCIIEncoding();
+                string postData = "ACTION=CREATEVIDEO";
+
+                postData += ("&rooftop_key=" + strRoofTopNotify);
+                postData += ("&VEHKEY=" + strVehicleKeyNotify);
+                postData += ("&VIDEOGUID=" + strGuidNotify);
+                postData += ("&NAME=" + strVideoTitleNotify);
+                postData += ("&DESC=" + strVideoDescNotify);
+
+                // Call the server related URL with all the above querystring  
+                return (NotifyServer(postData));
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("NotifyCreateVideo: " + ex.Message);
+                return false;
+            }
+        }
+
+        private bool NotifyUploadVideo()
+        {
+            try
+            {
+                // "ACTION=UPLOADVIDEO"
+                /*
+                http://admin.flickfusion.net/ava/php/appxml.php?
+                rooftop_key=[ROOFTOP_KEY]&ACTION=UPLOADVIDEO&VEHKEY=[VEHICLE_KEY]
+                &VIDEOGUID=[VIDEOGUID]&NAME=[VIDEONAME]&DEFAULT=[DEFAULT_CHECKBOX]&DESC=[VIDEO_DESC]
+                */
+
+                string postData = "rooftop_key=" + strRoofTopNotify + "&ACTION=UPLOADVIDEO";
+
+                postData += ("&VEHKEY=" + strVehicleKeyNotify);
+                postData += ("&VIDEOGUID=" + strGuidNotify);
+                postData += ("&NAME=" + strVideoTitleNotify);
+                postData += ("&DEFAULT=" + strIsDefaultNotify);
+                postData += ("&DESC=" + strVideoDescNotify);
+
+                // Call the server related URL with all the above querystring  
+                return (NotifyServer(postData));
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("NotifyUploadVideo: " + ex.Message);
+                return false;
+            }
+        }
+
+        private bool NotifyServer(string postData)
+        {
+            bool _failed = false;
+
+            // Call the server related URL with all the above querystring 
+            string serverData = string.Empty;
+            serverData = Common.GetServerData(postData);
+
+            // TODO -remove this log
+            Common.WriteLog("Notify server: " + postData);
+            Common.WriteLog("Server response: " + serverData);
+
+            if (string.IsNullOrEmpty(serverData))
+                return false;
+
+            if (serverData.Equals("WebError"))
+            {
+                lblError.Content = ResourceTxt.GetServerData_WebError;
+                _failed = true;
+            }
+            else if (serverData.Equals("Error"))
+            {
+                lblError.Content = ResourceTxt.GetServerData_Error;
+                _failed = true;
+            }
+
+            if (_failed)
+            {
+                lblError.Visibility =Visibility.Visible;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// If the user selected to delete the Output File in settings, 
+        /// then delete that file from the output video location
+        /// </summary>
+        private void RemoveOutputFile(string OutputFile)
+        {
+            try
+            {
+                if (File.Exists(OutputFile))
+                {
+                    string strStoreVideo = Common.GetVideoSettingInfo("StoreEncodedVideo");
+                    if (!string.IsNullOrEmpty(strStoreVideo))
+                    {
+                        if (strStoreVideo.ToLower() == "false")
+                        {
+                            File.Delete(OutputFile);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("RemoveOutputFile: " + ex.Message);
+            }
+        }
+
+        internal void TerminateUploading()
+        {
+            try
+            {
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("Status.TerminateUploading:" + ex.Message);
+            }
+        }
+
+        private void lblUploadingVehiceKey_TargetUpdated(object sender, DataTransferEventArgs e)
+        {
+            MessageBox.Show("dasdasd");
+        }
+
+        private void lblUploadingVehiceKey_TextInput(object sender, TextCompositionEventArgs e)
+        {
+            MessageBox.Show("dasdasd");
+        }
+
+       
+    }
+}

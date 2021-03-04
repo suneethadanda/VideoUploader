@@ -1,0 +1,197 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Net;
+using System.IO;
+using System.Runtime;
+using System.Runtime.InteropServices;
+using System.Configuration;
+using System.Windows.Forms;
+using System.Xml;
+
+
+
+
+namespace WpfVideoUploader
+{
+   public static class Common
+    {
+        public static Home OHome { get; set; }
+
+
+        //Creating the extern function.
+        [DllImport("wininet.dll")]
+        private extern static bool InternetGetConnectedState(out int Description, int ReservedValue);
+
+        /// <summary>
+        /// Connects to the FTP Server and get the required data
+        /// </summary>
+        /// <param name="pstrPostData"></param>
+        /// <returns></returns>
+        public static string GetServerData(string postData)
+        {
+            string result = null;
+            try
+            {
+                var encoding = new ASCIIEncoding();
+                byte[] data = encoding.GetBytes(postData);
+                var myRequest = (HttpWebRequest)WebRequest.Create(ResourceTxt.RequestURI);
+                myRequest.Method = "POST";
+                myRequest.ContentType = "application/x-www-form-urlencoded";
+                myRequest.ContentLength = data.Length;
+                var newStream = myRequest.GetRequestStream();
+                newStream.Write(data, 0, data.Length);
+                newStream.Close();
+                var response = myRequest.GetResponse();
+                var responseStream = response.GetResponseStream();
+                var responseReader = new StreamReader(responseStream);
+                result = responseReader.ReadToEnd();
+            }
+            catch (System.Net.WebException ex)
+            {
+                Common.WriteLog("GetServerData: " + ex.Message);
+                return "WebError";
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("GetServerData: " + ex.Message);
+                return "Error";
+            }
+
+            return result;
+        }
+
+        public static string LogFile
+        {
+            get { return (Common.GetFileName(ResourceTxt.LogFile)); }      
+        }
+
+        public static string SettingsFile
+        {
+            get { return (Common.GetFileName(ResourceTxt.SettingsFile)); }
+        }
+
+        public static string UploadRecordFile
+        {
+            get { return (Common.GetFileName(ResourceTxt.UploadRecordFile)); }
+        }
+
+        public static string VideoInfoFile
+        {
+            get { return (Common.GetFileName(ResourceTxt.VideoInfoXmlFile)); }
+        }
+
+        /// <summary>
+        /// Get the requested file name from the folder where all the Application related files are stored.
+        /// If the folder dosn't exist, then creates the folder
+        /// </summary>
+        /// <param name="File"></param>
+        /// <returns></returns>
+        private static string GetFileName(string File)
+        {
+            string strAppName = ResourceTxt.AppName;
+            string strFileName = strAppName + "\\" + File;
+            
+            DirectoryInfo dirUserData = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            
+            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), strAppName + "\\")))
+            {
+                dirUserData.CreateSubdirectory(strAppName);
+            }
+            
+            var strFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), strFileName);
+            
+            return strFile;
+        }
+
+        public static string GetVideoSettingInfo(string videoLocation)
+        {
+            string xmlPath = Common.SettingsFile;
+            string strDefaulePath = string.Empty;
+
+            if (File.Exists(xmlPath))
+            {
+                XmlDocument myXmlDocument = new XmlDocument();
+                myXmlDocument.Load(xmlPath);
+                XmlNode node;
+                node = myXmlDocument.DocumentElement[videoLocation];
+
+                if (node.Name == videoLocation)
+                {
+                    strDefaulePath = node.InnerText.ToString();
+                }
+            }
+
+            return strDefaulePath;
+        }
+
+        public static void WriteLog(string logText)
+        {
+            try
+            {
+                // Create a writer and open the file:
+                StreamWriter log;
+
+                string logFile = LogFile;
+
+                if (!File.Exists(logFile))
+                {
+                    log = new StreamWriter(logFile);
+                }
+                else
+                {
+                    log = File.AppendText(logFile);
+                }
+
+                log.WriteLine(DateTime.Now + "|" + logText);
+                log.Close();
+            }
+            catch (System.UnauthorizedAccessException)
+            {
+                MessageBox.Show(ResourceTxt.AccessDeniedError, "Access denied");
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        //Creating a function that uses the API function...
+        public static bool IsConnectedToInternet()
+        {
+            int Desc;
+
+            return InternetGetConnectedState(out Desc, 0);
+        }
+
+        // Taken from MyUtil
+        public static int StrToNumberWithDefValue(string value, int def)
+        {
+            if (value == null)
+            {
+                return def;
+            }
+
+            int result = int.Parse(value);
+            return result > 0 ? result : def;
+        }
+    }
+
+
+    public class ComboBoxItem
+    {
+        public string Value;
+        public string Text;
+
+        public ComboBoxItem(string value, string text)
+        {
+            Value = value;
+            Text = text;
+        }
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
+}

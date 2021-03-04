@@ -1,0 +1,69 @@
+﻿<Window x:Class="WpfVideoUploader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource MacWindowStyle}"
+        Title="MainWindow" Height="653" Width="1197" Background="White">
+
+
+
+    <Grid Height="632">
+        <Path Margin="13,4,9,27" Opacity="0.9" Stretch="Fill" Stroke="#FF000000" Data="M0,40 C0,0 40,0 40,0 C880,0 848,0 880,0 C912,0 912,40 912,40 C912,616 912,576 912,616 C912,656 872,656 872,656 C48,656 96,656 48,656 C0,656 0,616 0,616" Canvas.Left="6" 
+              Canvas.Top="12" Fill="#FF33393E"></Path>
+
+        <ComboBox Height="23" Name="comboBox1" Width="120" Margin="237,247,464,362" />
+        <ListView Margin="27,319,20,42" Name="ListView1" Canvas.Left="-2" Canvas.Top="212" >
+            <ListView.View>
+                <GridView AllowsColumnReorder="True">
+                    <GridViewColumn Header="Stock" DisplayMemberBinding="{Binding FirstName}" />
+                    <GridViewColumn Header="Image">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image  Width="30" Height="30" Source="{Binding Photo}" MouseEnter="Image_MouseEnter" 
+                                       MouseLeave="Image_MouseLeave">
+                                    
+                                </Image>
+
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="VIV" DisplayMemberBinding="{Binding SurName}"/>
+
+                    <GridViewColumn Header="Year" DisplayMemberBinding="{Binding FirstName}"/>
+
+                    <GridViewColumn Header="Mark" DisplayMemberBinding="{Binding SurName}"/>
+
+
+                    <!--<GridViewColumn Header="  Model" DisplayMemberBinding="{Binding FirstName}"/>-->
+
+                    <GridViewColumn Header="Trim" DisplayMemberBinding="{Binding SurName}"/>
+
+                    <GridViewColumn Header="Video" DisplayMemberBinding="{Binding FirstName}"/>
+
+                </GridView>
+            </ListView.View>
+        </ListView>
+       <Popup Name="popup1" VerticalOffset="20" 
+                                       PlacementRectangle="300,140,100,150" PopupAnimation="Fade"  
+                                       AllowsTransparency="True" Margin="959,724,109,42" Placement="Mouse"  IsOpen="False">
+
+
+        <Image Name="img1" Height="150" Width="200"  />
+
+        </Popup>
+        <Button Content="Button" Height="23" HorizontalAlignment="Left" Margin="197,77,0,0" Name="button1" VerticalAlignment="Top" Width="75" Background="#FF656F77" Foreground="#FF888888" />
+        <Path x:Name="Shape_13_copy_1" Data="F1M12.482,2C18.291,2 23,6.709 23,12.518 23,18.327 18.291,23.036 12.482,23.036 6.673,23.036 1.964,18.327 1.964,12.518 1.964,6.709 6.673,2 12.482,2z" Fill="#FFE01818" Height="25" Canvas.Left="863" Canvas.Top="13" Width="24" Margin="176,199,621,408">
+            <Path.Effect>
+                <DropShadowEffect BlurRadius="0" Color="#FFFFFFFF" Direction="-90" Opacity="0.3" ShadowDepth="1"/>
+            </Path.Effect>
+        </Path>
+        <ComboBox Height="23" Margin="402,247,299,362" Name="comboBox2" Width="120" />
+        <ComboBox Height="23" Margin="557,72,144,537" Name="comboBox3" Width="120" />
+        <ComboBox Height="23" Margin="382,72,319,537" Name="comboBox4" Width="120" />
+        <Label Content="sdfsdfdsfsdfsdfds" Height="28" HorizontalAlignment="Left" Margin="84,94,0,0" Name="label1" VerticalAlignment="Top" Width="58" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="516,123,0,0" Name="textBox1" VerticalAlignment="Top" Width="120" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="516,179,0,0" Name="textBox2" VerticalAlignment="Top" Width="120" />
+        <!--<Image Height="150" Name="image1" Stretch="Fill" Width="100" Source="/WpfVideoUploader;component/Images/images.jpg" />-->
+    </Grid>
+</Window>

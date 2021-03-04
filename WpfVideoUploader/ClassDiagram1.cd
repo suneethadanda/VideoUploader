@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="WpfVideoUploader.AboutUs">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAAAAAAAAAAAQAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AboutUs.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.App">
+    <Position X="7" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>App.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.ClearLists" Collapsed="true">
+    <Position X="8.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Classes\ClearLists.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Common">
+    <Position X="12.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAJEAEgAAACgAAEBAAAAAQASAAEBAAgAACAQAAAA=</HashCode>
+      <FileName>Classes\Common.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.ComboBoxItem" Collapsed="true">
+    <Position X="10.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAgCAAAAAA=</HashCode>
+      <FileName>Classes\Common.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.INDEX" Collapsed="true">
+    <Position X="8.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAgACAAAAAEACAAAAgAAACACAAAAAQAAA=</HashCode>
+      <FileName>Classes\Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.XNAME">
+    <Position X="10.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgACAAAIAAAAAAACAAAAAAAAAgAABCICAgQAAAAAA=</HashCode>
+      <FileName>Classes\Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.testCll">
+    <Position X="8.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.OutputOptions">
+    <Position X="3.25" Y="3.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="WpfVideoUploader.OutputOptions.HOOK_TYPE">
+        <TypeIdentifier>
+          <NewMemberFileName>Classes\OutputOptions.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAQgAMAAAAAEAAARABwQQAQEAAAUDAAECQABIQAACE=</HashCode>
+      <FileName>Classes\OutputOptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.UploadFileHelper">
+    <Position X="10.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>Classes\UploadFileHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Vehicle">
+    <Position X="12.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAABACAgAAAAEAAAEAAgAAAABAAAAkAIAJAAAg=</HashCode>
+      <FileName>Classes\Vehicle.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.VehicleInfo">
+    <Position X="14" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAoAgQCAwAAgEAAGACgAAAAiAAAAAAAAAAEAAQJAgAA=</HashCode>
+      <FileName>Classes\VehicleInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.XmlDataQueryHelper">
+    <Position X="7" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\XmlDataQueryHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.XmlTools">
+    <Position X="8.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAACAAAAAAAAAkAAAAABAAAAA=</HashCode>
+      <FileName>Classes\XmlTools.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.BusinessCollection&lt;T&gt;">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Collections\BusinessCollectionBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.VehicleInfoCollection">
+    <Position X="0.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Collections\VehicleInfoList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.VehicleList">
+    <Position X="2.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Collections\VehicleList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Home" Collapsed="true">
+    <Position X="5.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAYMoAB8goBciqgQwFmBQyg0iAAAQAAgAAEAEQAAIII=</HashCode>
+      <FileName>Home.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Installer1" Collapsed="true">
+    <Position X="10.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAACAAAAAGAACAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Installer1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.LogDetails" Collapsed="true">
+    <Position X="12.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEIAAAAAAAAAAgQAAgAAAAAQAAAAAAAgAAAAAA=</HashCode>
+      <FileName>LogDetails.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Login" Collapsed="true">
+    <Position X="14" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCEAAAAgAIAAAAgAACAAAQABABSAAACAIAAAAAAAs=</HashCode>
+      <FileName>Login.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.ResourceTxt" Collapsed="true">
+    <Position X="10.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gCQgEgGAQAAkKUgIA0AJHTAAAySCQCpCAQBUAMIqAME=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.RoofTop" Collapsed="true">
+    <Position X="12.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAIAAAAgAEAQBAQAABA0AAAAAAAAAAAAAM=</HashCode>
+      <FileName>RoofTop.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.ExtensionMethods">
+    <Position X="14" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RoofTop.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Settings" Collapsed="true">
+    <Position X="14" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAIAgAAAAAAAQEAAAQIBIAAAAAAAAAAA=</HashCode>
+      <FileName>Settings.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Status" Collapsed="true">
+    <Position X="7" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AKxhoyxFAgAoSAajRAXgAMwwxAECxBAGAKGoogkhbI0=</HashCode>
+      <FileName>Status.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.HomePageStyle" Collapsed="true">
+    <Position X="7" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAACAAAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Styles\HomePageStyle.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.MacStyledWindow" Collapsed="true">
+    <Position X="5.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAQAAAAAgAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Styles\MacStyledWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.VideoInfo" Collapsed="true">
+    <Position X="5.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAhQAAAAAIACACBIAAABAgAAAg0QAACCEgBgBggAA=</HashCode>
+      <FileName>VideoInfo.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Properties.Resources" Collapsed="true">
+    <Position X="8.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAAQAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfVideoUploader.Properties.Settings" Collapsed="true">
+    <Position X="5.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

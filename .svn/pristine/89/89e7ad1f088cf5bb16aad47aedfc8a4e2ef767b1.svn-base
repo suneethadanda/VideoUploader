@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccessDeniedError" xml:space="preserve">
+    <value>Access denied to create log file. \nPlease try by running the Application as Administrator</value>
+  </data>
+  <data name="ALiscenceKey" xml:space="preserve">
+    <value>7EAF06EA83DA2454528C747FC64128F9968296AC08E61FCCD052D464049EDDEFCE62B2ED069F1396AC27F7DA120E6A3FDE982ACA8B49A4E8735552303198E03250EFE9D36E9E5349D2E289FF18D6C919CAB81199B4B24B13ABDF70CBB53605C844B1ED2C4164D08B1B4392C526C3D49E4100C1399C052C986BA57392042AC468BF0DDFD7BA5B12AFC4F2FFC21F9DF83D75C054DC6DBC198B091AD0E8AFD49D7A8CBA1E6B1BEA6BE3E0A3B41DA51B79E0678A7B675D3183618229AF2D50650A8505E9EA106E8507156E53ECA07973D883152F3CF4A75EBA57576B50A56117E2B129C5734150D552B7519D28AA7368895C740444BFEC403C041F4BA207F1258786</value>
+  </data>
+  <data name="ApplicationName" xml:space="preserve">
+    <value>VideoUploader</value>
+  </data>
+  <data name="ApplicationUpdateURL" xml:space="preserve">
+    <value>http://localhost/VideoUploader</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>VideoUploader</value>
+  </data>
+  <data name="Aseed" xml:space="preserve">
+    <value>sudheer@concatsys.com</value>
+  </data>
+  <data name="CannotLoadSettings" xml:space="preserve">
+    <value>Cannot load settings</value>
+  </data>
+  <data name="ClearAllListsMessage" xml:space="preserve">
+    <value>This will stop currently uploading file and clear all the items from all the queue. Are sure to continue?</value>
+  </data>
+  <data name="CurrentVersion" xml:space="preserve">
+    <value>1.1.0</value>
+  </data>
+  <data name="DownloadLatestMessage" xml:space="preserve">
+    <value>Please wait, downloading latest version.</value>
+  </data>
+  <data name="EncodingErrorMsg1" xml:space="preserve">
+    <value>Failed to encode the file</value>
+  </data>
+  <data name="EncodingErrorMsg2" xml:space="preserve">
+    <value>.File removed from the Que</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ErrorAddingTask" xml:space="preserve">
+    <value>Error while adding task</value>
+  </data>
+  <data name="ErrorFileLoading" xml:space="preserve">
+    <value>Loading file to converter is failed!</value>
+  </data>
+  <data name="ErrorOpeningConverter" xml:space="preserve">
+    <value>Encoding failed, because of problem in opening converter</value>
+  </data>
+  <data name="ErrorPopulatingRoofTop" xml:space="preserve">
+    <value>Error occured while populating Rooftop</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>file not exist, removing from the uploading list</value>
+  </data>
+  <data name="FTPPath" xml:space="preserve">
+    <value>ftp://ftp.flickfusion.net/</value>
+  </data>
+  <data name="FTPUriError" xml:space="preserve">
+    <value>FTP URI is wrong, please check the FTP details</value>
+  </data>
+  <data name="GetServerData_Error" xml:space="preserve">
+    <value>Failed to get the data, Please try again</value>
+  </data>
+  <data name="GetServerData_WebError" xml:space="preserve">
+    <value>Connection closed, please check your net connection</value>
+  </data>
+  <data name="InstallerName" xml:space="preserve">
+    <value>VideoUploaderInstaller.msi</value>
+  </data>
+  <data name="InValidLogin" xml:space="preserve">
+    <value>Invalid user name or password. Please try again.</value>
+  </data>
+  <data name="LogFile" xml:space="preserve">
+    <value>VedioUploaderLog.log</value>
+  </data>
+  <data name="NoInternet" xml:space="preserve">
+    <value>Unable to connect to internet!</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>No records found!</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>uploaderPwd1!</value>
+  </data>
+  <data name="RemovingXMLFile" xml:space="preserve">
+    <value>Error occurred while removing the record from XML file: \n</value>
+  </data>
+  <data name="RequestURI" xml:space="preserve">
+    <value>http://admin.flickfusion.net/ava/php/appxml.php</value>
+  </data>
+  <data name="RoofTopSelect" xml:space="preserve">
+    <value>--Select Rooftop--</value>
+  </data>
+  <data name="selectVideoFile" xml:space="preserve">
+    <value>Select video file</value>
+  </data>
+  <data name="SettingsFile" xml:space="preserve">
+    <value>Settings.xml</value>
+  </data>
+  <data name="UnableToConnect" xml:space="preserve">
+    <value>Unable to connect to the remote server</value>
+  </data>
+  <data name="UpdateFailedMessage" xml:space="preserve">
+    <value>Failed to install latest version, Please contact application vendor</value>
+  </data>
+  <data name="UpdateLatestCaption" xml:space="preserve">
+    <value>New version</value>
+  </data>
+  <data name="UpdateLatestMessage" xml:space="preserve">
+    <value>Updated version is available. Do you want to install?</value>
+  </data>
+  <data name="UploadError" xml:space="preserve">
+    <value>Error occurred while uploading</value>
+  </data>
+  <data name="UploadError_AddQ" xml:space="preserve">
+    <value>Failed to add files to upload queue</value>
+  </data>
+  <data name="UploadError_FileLoad" xml:space="preserve">
+    <value>Failed to load the pending files to upload queue</value>
+  </data>
+  <data name="UploadRecordFile" xml:space="preserve">
+    <value>FileUploadRecord.xml</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>uploaderAppUser</value>
+  </data>
+  <data name="VehicleMakeAll" xml:space="preserve">
+    <value>--All Makes--</value>
+  </data>
+  <data name="VehicleModelAll" xml:space="preserve">
+    <value>--All Models--</value>
+  </data>
+  <data name="VersionInfoURL" xml:space="preserve">
+    <value>http://localhost/TestWebSite/Default.aspx</value>
+  </data>
+  <data name="VideoAddMessage" xml:space="preserve">
+    <value> Click queue button to check the progress.</value>
+  </data>
+  <data name="VideoInfoXmlFile" xml:space="preserve">
+    <value>VedioInformation.xml</value>
+  </data>
+</root>

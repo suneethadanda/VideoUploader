@@ -1,0 +1,15 @@
+﻿<Window x:Class="WpfVideoUploader.Window1"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource MacWindowStyle}"
+        Title="Window1" Height="443" Width="605">
+    <Grid>
+        <Button Content="Button" Height="23" HorizontalAlignment="Left" Margin="241,-25,0,0" Name="button1" VerticalAlignment="Top" 
+                Width="23" Style="{StaticResource MaximizeRadialButton}" SnapsToDevicePixels="True" OverridesDefaultStyle="True"  Click="button1_Click" />
+        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="178,84,0,0" Name="label1" VerticalAlignment="Top" />
+        <Button Content="Button" Height="68" HorizontalAlignment="Left" Margin="45,44,0,0" Name="button2" VerticalAlignment="Top" Width="107" />
+    </Grid>
+    <Window.Background>
+        <ImageBrush ImageSource="/WpfVideoUploader;component/Images/login_screen.png" />
+    </Window.Background>
+</Window>

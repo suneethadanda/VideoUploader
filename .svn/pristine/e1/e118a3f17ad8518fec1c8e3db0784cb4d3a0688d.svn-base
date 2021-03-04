@@ -1,0 +1,125 @@
+﻿<Window x:Class="WpfVideoUploader.Status"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Status" Height="817" Width="657"  
+        xmlns:cm="clr-namespace:System.ComponentModel;assembly=System" 
+        Window.Background="Transparent" WindowStyle="None" WindowState="Normal"  AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown" WindowStartupLocation="CenterScreen">
+   
+    <Window.Resources>
+        <cm:BackgroundWorker x:Key="bgWorker" 
+                             DoWork="bgWorker_DoWork"
+                             RunWorkerCompleted="bgWorker_RunWorkerCompleted"
+                             WorkerReportsProgress="True"
+                             ProgressChanged="bgWorker_ProgressChanged"
+                             WorkerSupportsCancellation="True"/>       
+    </Window.Resources>
+
+    <Grid Height="696" Width="602">
+        <Grid.Resources>
+            <ResourceDictionary Source="Styles\ExpressionLight.xaml"/>
+        </Grid.Resources>
+        <Grid.Background>
+            <ImageBrush ImageSource="/WpfVideoUploader;component/Images/status_bg.png" />
+        </Grid.Background>
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,5,10,0" Name="btnClose" VerticalAlignment="Top" Width="25" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Left" Margin="542,4,0,0" Name="btnMinimize" VerticalAlignment="Top" Width="23" Style="{StaticResource MinimizeRadialButton}" Click="btnMinimize_Click"/>
+        <Label Content="Error" Height="17"  SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="29,40,0,0" Name="lblError" VerticalAlignment="Top" Width="432" Foreground="Red" Visibility="Hidden" />
+        <Button Content="Clear All" Height="23" HorizontalAlignment="Left" Margin="513,36,0,0" Name="btnClearAll" VerticalAlignment="Top" Width="75" Background="#FF2A2E33" Foreground="#FFA7FF00" BorderBrush="#FF171718" Click="btnClearAll_Click" />
+        <Button Content="Delete" Height="20" HorizontalAlignment="Left" Margin="517,407,0,0" Name="btnDelUploading" VerticalAlignment="Top" Width="56" Background="#FF2A2E33" Foreground="#FFA7FF00" Click="btnDelUploading_Click" />
+        <Button Content="Delete" Height="20" HorizontalAlignment="Left" Margin="518,171,0,0" Name="btnDelEncoding" VerticalAlignment="Top" Width="56" Background="#FF2A2E33" Foreground="#FFA7FF00" Click="btnDelEncoding_Click" />
+
+        <GroupBox Header="Currently Encoding" SnapsToDevicePixels="True" Height="96" HorizontalAlignment="Left" Margin="28,71,0,0" Name="gbCurrentlyEncoding" VerticalAlignment="Top" Width="547" Foreground="#FF727272" FontSize="14" Background="#FF1E2429">
+            <Grid SnapsToDevicePixels="True" Height="64">
+                <Label Content="Vehicle Key:" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="6,1,0,43" Name="label1" Foreground="#FFA7FF00" BorderBrush="#FF557438" FontSize="11"></Label>
+                <Label Content="Out File Name:" SnapsToDevicePixels="True" Height="20" HorizontalAlignment="Left" Margin="5,22,0,0" Name="label2" VerticalAlignment="Top" Foreground="#FFA7FF00" BorderBrush="#FF557438" FontSize="11" />
+                <ProgressBar Height="18" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="6,43,0,0" Name="pbConvertProgress" VerticalAlignment="Top" Width="522" Foreground="#FFAAC70A" />
+                <Label Height="20" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="118,2,0,0" Name="lblVehicleKeyValue" VerticalAlignment="Top" Width="396" BorderBrush="#FF557438" Foreground="#FFFEFEFE" FontSize="11" />
+                <Label Height="20" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="118,21,0,0" Name="lblInputFileNameValue" VerticalAlignment="Top" Width="396" BorderBrush="#FF557438" Foreground="#FFFEFEFE" FontSize="11" />
+            </Grid>
+        </GroupBox>
+
+        <GroupBox SnapsToDevicePixels="True" Header="Currently Uploading" Height="98" Margin="25,307,27,0" Name="groupBox1" VerticalAlignment="Top" Foreground="#FF727272" FontSize="14" Background="#FF1E2429"></GroupBox>
+
+        <Label Content="Videos Ready To Upload" Height="28" HorizontalAlignment="Left" Margin="29,454,0,0" Name="label5" VerticalAlignment="Top" FontSize="14" Foreground="#FF727272" />
+        <Label Content="Videos Uploaded" Height="20" HorizontalAlignment="Left" Margin="28,541,0,0" Name="label6" VerticalAlignment="Top" Foreground="#FFFEFEFE" Width="115" FontSize="14" BorderBrush="#FF557438" />
+        <Label Content="Upload Error" Height="15" HorizontalAlignment="Left" Margin="28,41,0,0" Name="lblUploadError" VerticalAlignment="Top" Foreground="Red" Visibility="Hidden" Width="465" />
+        <Label Content="Videos Ready To Encode" Height="20" HorizontalAlignment="Left" Margin="26,172,0,0" Name="lblEncodingQueue" VerticalAlignment="Top" Width="198" FontSize="14" Foreground="#FFFEFEFE" />
+        <Grid Height="105" HorizontalAlignment="Left" Margin="26,195,0,0" Name="grid1" VerticalAlignment="Top" Width="549">
+           <Border CornerRadius="7">
+                <ListView Name="lvEncodingQueue" ItemsSource="{Binding}" BorderThickness="0" Margin="1,1,1,1" Height="105" SelectedIndex="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView.View>
+                    <GridView x:Name="lvGrid" AllowsColumnReorder="False">
+                        <GridView.Columns>
+                            <GridViewColumn Header="">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Name="encodingCheckBox" IsChecked="{Binding IsSelected}" Click="encodingCheckBox_Click"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="170" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />
+                            <GridViewColumn Width="170" Header="Source File Name" DisplayMemberBinding="{Binding Path=InputFileName}" />
+                            <GridViewColumn Width="170" Header="Output File Name" DisplayMemberBinding="{Binding Path=OutputFileName}" />
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+           </Border>
+        </Grid>
+
+        <Grid Height="105" HorizontalAlignment="Left" Name="grid5" VerticalAlignment="Top" Width="549" Margin="26,431,0,0" >
+            <Border CornerRadius="7">
+                <ListView Height="105" Name="lvUploading" Width="548" ItemsSource="{Binding}" BorderThickness="0" Margin="1,1,1,1"  SelectedIndex="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                    <ListView.View>
+                        <GridView x:Name="lvUploadingGrid" AllowsColumnReorder="False">
+                            <GridView.Columns>
+                                <GridViewColumn>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox Name="upLoadingChkBox" IsChecked="{Binding IsSelected}" Click="upLoadingChkBox_Click"/>
+                                            </StackPanel>
+                                            
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="170" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />
+                                <GridViewColumn Width="170" Header="Source File Name" DisplayMemberBinding="{Binding Path=InputFileName}" />
+                                <GridViewColumn Width="170" Header="Output File Name" DisplayMemberBinding="{Binding Path=OutputFileName}" />
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+        </Grid>
+        
+        <Grid Height="104" HorizontalAlignment="Left" Margin="26,566,0,0" Name="grid3" VerticalAlignment="Top" Width="549">
+            <Border CornerRadius="7">
+                <ListView Name="lvVideoUploaded" Width="549" ItemsSource="{Binding}" BorderThickness="0" Margin="1,1,1,1" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                    <ListView.View>
+                        <GridView x:Name="lvUploadedGrid" AllowsColumnReorder="False">
+                            <GridView.Columns>
+                                <GridViewColumn Width="170" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />
+                                <GridViewColumn Width="170" Header="Source File Name" DisplayMemberBinding="{Binding Path=InputFileName}" />
+                                <GridViewColumn Width="170" Header="Output File Name" DisplayMemberBinding="{Binding Path=OutputFileName}" />
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+          </Border>
+        </Grid>
+        <Grid SnapsToDevicePixels="True" Margin="28,335,33,295">
+            <Label Content="Vehicle Key:" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="11,7,0,39" Name="label3" Foreground="#FFA7FF00" BorderBrush="#FF557438" />
+            <Label Content="Out File Name:" SnapsToDevicePixels="True" Height="20" HorizontalAlignment="Left" Margin="10,27,0,0" Name="label4" VerticalAlignment="Top" Foreground="#FFA7FF00" BorderBrush="#FF557438" />
+            <ProgressBar Height="18" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="7,45,0,0" Name="pbUploadProgress" VerticalAlignment="Top" Width="527" Foreground="#FFAAC70A" />
+            <Label Content="" Height="20" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="95,5,0,0" Name="lblUploadingVehiceKey" VerticalAlignment="Top" Width="296" Foreground="#FFFEFEFE" BorderBrush="#FF557438" TargetUpdated="lblUploadingVehiceKey_TargetUpdated" TextInput="lblUploadingVehiceKey_TextInput" />
+            <Label Content="" Height="20" SnapsToDevicePixels="True" HorizontalAlignment="Right" Margin="0,26,150,0" Name="lblUploadingFileName" VerticalAlignment="Top" Width="296" Foreground="#FFFEFEFE" BorderBrush="#FF557438" />
+            <Label BorderBrush="#FF557438" Content="FileSize:" Foreground="#FFA7FF00" HorizontalAlignment="Left" Margin="397,7,0,0" Name="label7" SnapsToDevicePixels="True" Height="20" VerticalAlignment="Top" Width="60" />
+            <Label BorderBrush="#FF557438" Content="Completed:" Foreground="#FFA7FF00" HorizontalAlignment="Left" Margin="397,26,0,20" Name="label8" SnapsToDevicePixels="True" Width="60" />
+            <Label BorderBrush="#FF557438" Foreground="#FFFEFEFE" HorizontalAlignment="Left" Margin="461,5,0,41" Name="lblUploadingFileSize" SnapsToDevicePixels="True" Width="73" />
+            <Label BorderBrush="#FF557438" Foreground="#FFFEFEFE" HorizontalAlignment="Left" Margin="461,26,0,20" Name="lblCompUploadingSize" SnapsToDevicePixels="True" Width="73" />
+        </Grid>
+        <Label BorderBrush="#FF557438" Content="Uploading Speed:" Foreground="#FFA7FF00" Height="17" HorizontalAlignment="Left" Margin="38,410,0,0" Name="label9" SnapsToDevicePixels="True" VerticalAlignment="Top" Width="105" />
+        <Label BorderBrush="#FF557438" Foreground="#FFFEFEFE" Height="17" HorizontalAlignment="Right" Margin="0,410,337,0" Name="lblSpeed" SnapsToDevicePixels="True" VerticalAlignment="Top" Width="118" />
+    </Grid>
+</Window>

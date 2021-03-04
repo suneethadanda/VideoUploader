@@ -1,0 +1,12 @@
+﻿<Window x:Class="WpfVideoUploader.UpdateApplication"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UpdateApplication" Height="300" Width="300">
+    <Grid>
+        <Grid Height="261" HorizontalAlignment="Left" Name="grid1" VerticalAlignment="Top" Width="278">
+            <Label Content="Latest" Height="28" HorizontalAlignment="Left" Margin="36,75,0,0" Name="lblMessage" VerticalAlignment="Top" Width="91" />
+        </Grid>
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,9,10,0" Name="btnClose" VerticalAlignment="Top" Width="25" Style="{StaticResource CloseRadialButton}" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,9,37,0" Name="btnMinimize" VerticalAlignment="Top" Width="23" Style="{StaticResource MinimizeRadialButton}"/>
+    </Grid>
+</Window>

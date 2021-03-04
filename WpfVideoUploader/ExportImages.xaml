@@ -1,0 +1,63 @@
+﻿<Window x:Class="WpfVideoUploader.ExportImages"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Export Images" Height="534" Width="600"  Window.Background="Transparent"
+            xmlns:cm="clr-namespace:System.ComponentModel;assembly=System"
+            WindowStyle="None" WindowState="Normal"  AllowsTransparency="True" 
+            MouseLeftButtonDown="Window_MouseLeftButtonDown"  WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <cm:BackgroundWorker x:Key="backgroundWorker"
+                             DoWork="BackgroundWorker_DoWork"
+                             WorkerReportsProgress="True"
+                             ProgressChanged="BackgroundWorker_ProgressChanged"
+                             RunWorkerCompleted="BackgroundWorker_RunWorkerCompleted"/>
+        <cm:BackgroundWorker x:Key="secondbackgroundWorker"
+                             DoWork="BackgroundWorker_DoWork_1"
+                             RunWorkerCompleted="BackgroundWorker_RunWorkerCompleted_1"/>
+    </Window.Resources>
+
+    <Grid Width="550" Height="450" >
+        <Grid.Background>
+            <ImageBrush ImageSource="/WpfVideoUploader;component/Images/export_bg_new.png" />
+        </Grid.Background>
+        <Grid.Resources>
+            <ResourceDictionary Source="Styles\ExpressionLight.xaml"/>
+        </Grid.Resources>
+        <Button   Content="Export" Name="btnOk" FontWeight="Normal" FontFamily="Tahoma" Click="btnOk_Click"  Margin="206,171,262,254" Foreground="#FFA7FF00" Background="#FF2A2E33" TabIndex="5" IsDefault="True" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,9,4,0" Name="btnClose" VerticalAlignment="Top" Width="25" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click"  IsCancel="True" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Left" Margin="498,9,0,0" Name="btnMinimize" VerticalAlignment="Top" Width="23" Style="{StaticResource MinimizeRadialButton}" Click="btnMinimize_Click"/>
+        <RadioButton Content="Prefix with Stock" TabIndex="1" FontFamily="Tahoma"  GroupName="Export" Foreground="#FFA7FF00" HorizontalAlignment="Left" Margin="189,54,0,377"  Checked="rdBtnStock_Checked"  Name="rdBtnStock" />
+        <RadioButton Content="Pefix with VIN"  TabIndex="2" FontFamily="Tahoma" Foreground="#FFA7FF00" GroupName="Export" HorizontalAlignment="Left" Margin="189,75,0,356" Name="rdBtnVIN" Checked="rdBtnVIN_Checked" Width="109" />
+        <RadioButton Content="Custom Prefix" TabIndex="3" Foreground="#FFA7FF00" FontFamily="Tahoma" GroupName="Export" HorizontalAlignment="Left" Margin="189,96,0,336" Name="rdBtnCustom" Checked="rdBtnCustom_Checked" />
+        <TextBox Height="23" Visibility="Hidden" MaxLength="50"  TabIndex="4"  HorizontalAlignment="Left" Margin="289,91,0,0" Name="txtCustomSuffix" VerticalAlignment="Top" Width="136" Background="#FF656F77" AcceptsTab="False"  FontSize="12" Foreground="White" TextChanged="txtCustomSuffix_TextChanged"/>
+        <Label Content="" Height="27" HorizontalAlignment="Left" Margin="161,137,0,0" Visibility="Hidden" Name="lblMessge" VerticalAlignment="Top"   Width="324" />
+        <Control x:Name="Spinner" Style="{StaticResource WaitSpinnerStyle}" Canvas.Left="248" Canvas.Top="380" Visibility="Collapsed"  
+               Foreground="#FFFEFEFE" Margin="48,0,0,68" HorizontalAlignment="Left" Width="30" Height="44" VerticalAlignment="Bottom" />
+        <RadioButton Content="Push to Remote Server" FontFamily="Tahoma" Click="rbtPushToServer_Click" Foreground="#FFA7FF00" GroupName="Export" Height="17" HorizontalAlignment="Left" Margin="189,118,0,0" Name="rbtPushToServer" TabIndex="3" VerticalAlignment="Top" Width="158" Checked="rbtPushToServer_Checked" />
+
+        <Grid Margin="12,205,12,31" Name="grdStatus" Visibility="Hidden">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="358*" />
+                <ColumnDefinition Width="192*" />
+            </Grid.ColumnDefinitions>
+
+            <ProgressBar Height="20" HorizontalAlignment="Left" Margin="14,65,0,0" Name="pbExportImages" Visibility="Visible" VerticalAlignment="Top" Width="500" Grid.ColumnSpan="2" />
+            <TextBlock Name="txtBlockProgress" Margin="218,65,86,264" Height="20"  Foreground="Black"></TextBlock>
+
+            <ListView Name="lvExportingQueue" ItemsSource="{Binding}" BorderThickness="0" Margin="14,92,12,14" SelectedIndex="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden" Grid.ColumnSpan="2">
+                <ListView.View>
+                    <GridView x:Name="lvGrid" AllowsColumnReorder="False">
+                        <GridView.Columns>
+                            <GridViewColumn Width="250" Header="RoofTopKey" DisplayMemberBinding="{Binding Path=RooftopKey}" />
+                            <GridViewColumn Width="250" Header="Output File Name" DisplayMemberBinding="{Binding Path=OutputFileName}" />
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Label Content="Roof Top Key:" Foreground="#FFA7FF00" Height="19" HorizontalAlignment="Left" Margin="60,11,0,0" Name="label1" VerticalAlignment="Top" Width="78" />
+            <Label Content="Video GUID:" Foreground="#FFA7FF00" Height="18" HorizontalAlignment="Left" Margin="68,35,0,0" Name="label2" VerticalAlignment="Top" Width="67" />
+            <Label Content="" Height="21" Foreground="White" HorizontalAlignment="Right" Margin="0,11,77,0" Name="lblRoofTopKey" VerticalAlignment="Top" Width="308" Grid.ColumnSpan="2" />
+            <Label Content="" Height="19" Foreground="White" HorizontalAlignment="Left" Margin="141,37,0,0" Name="lblVideoGuid" VerticalAlignment="Top" Width="308" Grid.ColumnSpan="2" />
+        </Grid>
+    </Grid>
+</Window>

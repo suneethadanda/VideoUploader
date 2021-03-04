@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace WpfVideoUploader
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+            List<Person> personCollection = new List<Person>();
+
+            personCollection.Add(new Person("Sathish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Desert.jpg"));
+            personCollection.Add(new Person("Domodar", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Penguins.jpg"));
+            personCollection.Add(new Person("Sharqth", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Chrysanthemum.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Lokesh", "Moolya ", @"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Lokesh", "Moolya ", @"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg"));
+            personCollection.Add(new Person("Sharqth", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Chrysanthemum.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Sharqth", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Chrysanthemum.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Sharqth", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Chrysanthemum.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Deviprasad", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            personCollection.Add(new Person("Girish", "Moolya", @"C:\Users\Public\Pictures\Sample Pictures\Tulips.jpg"));
+            ListView1.ItemsSource = personCollection;
+        }
+        public class Person
+        {
+            public string FirstName { get; set; }
+            public string SurName { get; set; }
+            public string Photo { get; set; }
+            public Person()
+            {
+            }
+            public Person(string firstName, string surName, string photo)
+            {
+                FirstName = firstName;
+                SurName = surName;
+                Photo = photo;
+            }
+
+        }
+        private void Image_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Image img2 = (Image)sender;
+            string imgPath = img2.Source.ToString();
+
+            img1.Source = img2.Source;
+
+            popup1.IsOpen = true;
+            popup1.StaysOpen = false;
+        }
+
+        private void Image_MouseLeave(object sender, MouseEventArgs e)
+        {
+
+            popup1.IsOpen = false;
+
+            popup1.StaysOpen = false;
+        }
+
+       
+    }
+}

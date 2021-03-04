@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Vehicles>
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="aaaa" Description="aaaa" VideoGUID="7CD97578-8981-4EC7-0871-BD8651F210E5" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="aaaa" Description="aaaa" VideoGUID="CAA6EC8C-B5A8-5356-141A-4BC3A63C8293" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="aaa" Description="aaaa" VideoGUID="E8D2459C-A23F-FBD5-DCFC-F2F5E8802B7A" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="aaaaa" Description="aaaaa" VideoGUID="2F53341D-AA7E-602D-C1E1-8DA1304C722D" DefaultVideo="False" />
+  <Vehicle index="2" Key="BE154DAB-1946-103C-9AF4-05A73AAFC7F4" Title="ss" Description="sss" VideoGUID="81A41ECF-15D7-2854-3C5F-2BE49235A17C" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="ss" Description="ssss" VideoGUID="1C54124E-8CD2-D1CB-C1F3-D58260DEBD4C" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="hhhh" Description="" VideoGUID="2AE755A4-2151-9B2A-07F6-3AF12B998CF4" DefaultVideo="False" />
+  <Vehicle index="1" Key="D3CBF649-ED01-F6ED-6077-D39FB58221F8" Title="ssss" Description="ssss" VideoGUID="ED89F8FB-C28A-1FB9-D825-C930A696451A" DefaultVideo="False" />
+  <Vehicle index="3" Key="C532F4E2-5947-763B-82FA-7F80DDE05338" Title="ddd" Description="ddd" VideoGUID="186BD880-C58F-7EDD-8A9C-CDE2564DB11C" DefaultVideo="False" />
+</Vehicles>

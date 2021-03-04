@@ -1,0 +1,186 @@
+﻿<Window x:Class="WpfVideoUploader.ViewSelectedImages"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ViewSelectedImages" Height="746" Width="985"  Window.Background="Transparent" WindowStyle="None" WindowState="Normal" MouseLeftButtonDown="Window_MouseLeftButtonDown"   AllowsTransparency="True" Loaded="Window_Loaded"  WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ItemsPanelTemplate x:Key="ImageGalleryItemsPanelTemplate">
+            <UniformGrid Columns="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></UniformGrid>
+        </ItemsPanelTemplate>
+
+        <Style x:Key="RoundCorner" TargetType="{x:Type Button}">
+
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid x:Name="grid">
+                            <Border x:Name="border" CornerRadius="8" BorderBrush="Black" BorderThickness="2">
+                                <Border.Background>
+                                    <RadialGradientBrush GradientOrigin="0.496,1.052">
+                                        <RadialGradientBrush.RelativeTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform CenterX="0.0" CenterY="0.0" 
+                                                ScaleX="1.5" ScaleY="1.5"/>
+                                                <TranslateTransform X="0.00" Y="0.9"/>
+                                            </TransformGroup>
+                                        </RadialGradientBrush.RelativeTransform>
+                                        <GradientStop Offset="1" Color="#00000000"/>
+                                        <GradientStop Offset="0.3" Color="#FFFFFFFF"/>
+                                    </RadialGradientBrush>
+                                </Border.Background>
+                                <ContentPresenter HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         TextElement.FontWeight="Bold"></ContentPresenter>
+                            </Border>
+
+                        </Grid>
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" TargetName="border">
+                                    <Setter.Value>
+                                        <RadialGradientBrush GradientOrigin="0.496,1.052">
+                                            <RadialGradientBrush.RelativeTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform CenterX="0.0" CenterY="0.0" ScaleX="1.0" ScaleY="1.0"/>
+                                                    <TranslateTransform X="0.02" Y="0.3"/>
+                                                </TransformGroup>
+                                            </RadialGradientBrush.RelativeTransform>
+                                            <GradientStop Color="#00000000" Offset="1"/>
+                                            <GradientStop Color="#FF303030" Offset="0.3"/>
+                                        </RadialGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF33962B"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" TargetName="grid" Value="0.25"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+
+        <Style TargetType="Image" x:Key="ImageHover">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="BitmapEffect">
+                        <Setter.Value>
+                            <OuterGlowBitmapEffect GlowColor="Black" GlowSize="8"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Opacity" Value="0.7" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <DataTemplate x:Key="ListImageDataTemplate">
+            <Border BorderBrush="Black" BorderThickness="1">
+                <Grid HorizontalAlignment="Left" Width="180" Height="100">
+                    <Border  BorderBrush="White" BorderThickness="1" >
+                        <Grid Background="Black">
+                            <!--<Rectangle  Fill="#FFE5E5E5"/>-->
+                            <Image x:Name="Img" Width="180" Height="180"  Stretch="Uniform"  Source="{Binding image}">
+                            </Image>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <SolidColorBrush x:Key="borderBrush" Color="Red"/>
+        <LinearGradientBrush x:Key="firstBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="Red" Offset="0"/>
+            <GradientStop Color="LightGreen" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="previousBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="LightGreen" Offset="0"/>
+            <GradientStop Color="Red" Offset="0.4"/>
+            <GradientStop Color="LightGreen" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="nextBrush" StartPoint="0,1" EndPoint="1,0">
+            <GradientStop Color="LightGreen" Offset="0"/>
+            <GradientStop Color="Red" Offset="0.4"/>
+            <GradientStop Color="LightGreen" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="lastBrush" StartPoint="0,1" EndPoint="1,0">
+            <GradientStop Color="LightGreen" Offset="0"/>
+            <GradientStop Color="Red" Offset="1"/>
+        </LinearGradientBrush>
+        <!--<LinearGradientBrush x:Key="progressBrush" StartPoint="0,1" EndPoint="1,1">
+            <GradientStop Color="Violet" Offset="0.1"/>
+            <GradientStop Color="Indigo" Offset="0.3"/>
+            <GradientStop Color="Blue" Offset="0.4"/>
+            <GradientStop Color="Green" Offset="0.5"/>
+            <GradientStop Color="Yellow" Offset="0.7"/>
+            <GradientStop Color="Orange" Offset="0.8"/>
+            <GradientStop Color="Red" Offset="0.9"/>
+        </LinearGradientBrush>-->
+    </Window.Resources>
+    <Grid Width="949" Cursor="Hand">
+        <Grid.Resources>
+            <ResourceDictionary Source="Styles\HomePageStyle.xaml"/>
+        </Grid.Resources>
+        <Grid.Background>
+            <ImageBrush ImageSource="Images\Selected_new.png" />
+        </Grid.Background>
+        <Canvas Margin="47,154,277,124">
+            <Button Name="btnFirst" Visibility="Hidden" Background="{StaticResource firstBrush}" BorderBrush="{StaticResource borderBrush}" Content="&lt;&lt;" Canvas.Left="57" Canvas.Top="359" Width="60" Height="30" Click="btnFirst_Click" />
+            <Button Name="btnPrevious" Visibility="Hidden" Background="{StaticResource previousBrush}" BorderBrush="{StaticResource borderBrush}" Content="&lt;" Canvas.Left="131" Canvas.Top="359" Width="60" Height="30" Click="btnPrevious_Click" />
+            <Button Name="btnNext" Background="{StaticResource nextBrush}" Visibility="Hidden" BorderBrush="{StaticResource borderBrush}" Content="&gt;" Canvas.Left="207" Canvas.Top="359" Width="60" Height="30" Click="btnNext_Click" />
+            <Button Name="btnLast" Visibility="Hidden" Background="{StaticResource lastBrush}" BorderBrush="{StaticResource borderBrush}" Content="&gt;&gt;" Canvas.Left="278" Canvas.Top="359" Width="60" Height="30" Click="btnLast_Click" />
+            <!--<ProgressBar Name="progressBar1" Background="{StaticResource progressBrush}" BorderBrush="{StaticResource borderBrush}" Canvas.Left="57" Canvas.Top="401" Height="10" Width="280" Minimum="1" Value="1" Foreground="Green" />-->
+            <ProgressBar Name="StausPbar" Visibility="Hidden"  BorderBrush="{StaticResource borderBrush}" Canvas.Left="48" Canvas.Top="388" Height="10" Width="280" Minimum="1"  Value="1" Foreground="Green" />
+            <CheckBox Name="chkAutoPlay" Visibility="Hidden" Canvas.Left="510"  Canvas.Top="436" Height="16" Width="117" Click="chkAutoPlay_Click" Foreground="White">Play Automatically</CheckBox>
+            <Image Canvas.Left="2" Canvas.Top="1" Width="623" Height="428" x:Name="ImgforSelected" Stretch="Fill" />
+        </Canvas>
+        <Button Content="Button" Height="30" HorizontalAlignment="Right" Margin="0,14,2,0" Name="btnClose" VerticalAlignment="Top" Width="31" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click" />
+        <ListBox x:Name="lstViewSelectedImages"  
+                 SelectedItem="{Binding image}" 
+                 ItemsSource="{Binding}" ItemsPanel="{DynamicResource ImageGalleryItemsPanelTemplate}" 
+                 ItemTemplate="{StaticResource ListImageDataTemplate}" 
+                 Margin="735,65,10,0" Foreground="White" 
+                 SelectionChanged="lstViewSelectedImages_SelectionChanged" Height="670" VerticalAlignment="Top">
+        </ListBox>
+        <!--<Button Background="#FF2A2E33" Content="&gt;" Foreground="#FFA7FF00" Height="32" HorizontalAlignment="Right" Margin="0,115,182,0" Name="button1" VerticalAlignment="Top" Width="34" Click="btnNext1_Click" />-->
+        <Button Background="#FF2A2E33"   Height="33" Style="{DynamicResource RoundCorner}" HorizontalAlignment="Right" ToolTip="Next" Margin="0,116,277,0" Name="btnnNext" VerticalAlignment="Top" Width="32" Click="btnNext1_Click">
+            <StackPanel>
+                <Image Source="Images\next.png.png" ></Image>
+            </StackPanel>
+        </Button>
+
+        <Button Background="#FF2A2E33"   Height="32" HorizontalAlignment="Right" Style="{DynamicResource RoundCorner}"  ToolTip="Play" Margin="0,116,583,0" Name="btnPlay" VerticalAlignment="Top" Width="32" Click="btnPlay_Click">
+            <StackPanel>
+                <Image Source="Images\play.png.png" ></Image>
+            </StackPanel>
+        </Button>
+
+
+
+
+        <Button Background="#FF2A2E33" Visibility="Hidden" Style="{DynamicResource RoundCorner}"  Height="32" HorizontalAlignment="Right" ToolTip="Pause" Margin="0,116,583,0" Name="btnPause" VerticalAlignment="Top" Width="32" Click="btnPause_Click">
+            <StackPanel>
+                <Image Source="Images\pause.png.png" ></Image>
+            </StackPanel>
+        </Button>
+
+
+        <Button Background="#FF2A2E33"  Foreground="#FFA7FF00" Style="{DynamicResource RoundCorner}" Height="32" ToolTip="Previous" HorizontalAlignment="Left" Margin="47,117,0,0" Name="btnnPrevious" VerticalAlignment="Top" Width="32" Click="btnPrevoius1_Click" >
+            <StackPanel>
+                <Image Source="Images\prev.png.png"  ></Image>
+            </StackPanel>
+        </Button>
+        <!--<Button Background="#FF2A2E33" Content="&lt;" Foreground="#FFA7FF00" Height="32" HorizontalAlignment="Left" Margin="26,114,0,0" Name="button2" VerticalAlignment="Top" Width="34" Click="btnPrevoius1_Click" />-->
+        <!--<Button Background="#FF2A2E33" Content="Done" Foreground="#FFA7FF00" Height="32" Name="btnDone" Click="btnDone_Click" HorizontalAlignment="Right" Margin="0,618,552,0"  VerticalAlignment="Top" Width="86" />-->
+        <Button Background="#FF2A2E33" Content="Done" Foreground="#FFA7FF00" Height="27" HorizontalAlignment="Left" Margin="323,618,0,0" Name="btnDone" Click="btnDone_Click" VerticalAlignment="Top" Width="56" />
+    </Grid>
+</Window>

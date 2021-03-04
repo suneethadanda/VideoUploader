@@ -1,0 +1,46 @@
+﻿<Window x:Class="WpfVideoUploader.VideoInfo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VideoInfo" Height="447" Width="523"
+        WindowStyle="None" WindowState="Normal" Loaded="Window_Loaded"  AllowsTransparency="True" Closing="Window_Closing" MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Window.Background="Transparent" WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="221*" />
+            <ColumnDefinition Width="280*" />
+        </Grid.ColumnDefinitions>
+        <Grid.Background>
+            <ImageBrush ImageSource="/WpfVideoUploader;component/Images/video_info_bg.png" />
+        </Grid.Background>
+        <Grid.Resources>
+            <ResourceDictionary Source="Styles\ExpressionLight.xaml"/>
+        </Grid.Resources>
+        <TextBox Height="25" HorizontalAlignment="Right" Margin="0,89,128,0" Name="txtTitle" MaxLength="50"  VerticalAlignment="Top" Width="221" Background="#FF656F77" Foreground="White" Grid.ColumnSpan="2" TextChanged="txtTitle_TextChanged" />
+        <TextBox Height="78" HorizontalAlignment="Right" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"   Margin="0,126,128,0" Name="txtDescription" VerticalAlignment="Top" Width="221" Background="#FF656F77" Foreground="White" Grid.ColumnSpan="2" />
+        <Canvas Margin="64,289,62,24" Grid.ColumnSpan="2" Name="CanvasBrowse">
+            <Button Content="Select Video" Height="29" HorizontalAlignment="Left"  Name="btnAddVideo" VerticalAlignment="Top" Width="89" Click="btnAddVideo_Click" Foreground="#FFA7FF00" Background="#FF2A2E33" Grid.Column="1" Canvas.Left="248" Canvas.Top="11" />
+            <TextBox Height="29" HorizontalAlignment="Left"  Name="txtFileName" VerticalAlignment="Top" Width="226" Background="#FF656F77" Foreground="White" Grid.ColumnSpan="2" Canvas.Left="16" Canvas.Top="11" />
+            <Button Content="Next" Height="25"  Visibility="Hidden" HorizontalAlignment="Left"  Name="btnNext" VerticalAlignment="Top" Width="89" Click="btnNext_Click" Background="#FF2A2E33" Foreground="#FFA7FF00" FontWeight="Bold" FontSize="12" Canvas.Top="59" Canvas.Left="248"  Grid.Column="1" />
+        </Canvas>
+
+        <Canvas Margin="64,289,62,26" Grid.ColumnSpan="2" Name="CanvasRecord" Visibility="Hidden">
+            <Button Content="Record Video" Height="29" HorizontalAlignment="Left"  Name="btnRecordVideo" VerticalAlignment="Top" Width="89" Click="btnRecordVideo_Click"  Foreground="#FFA7FF00" Background="#FF2A2E33" Grid.Column="1" Canvas.Left="110" Canvas.Top="11" />
+            <Button Content="Next" Height="25" Visibility="Hidden"  HorizontalAlignment="Left"  Name="btnNextRecord" VerticalAlignment="Top" Width="89" Click="btnNext_Click" Background="#FF2A2E33" Foreground="#FFA7FF00" FontWeight="Bold" FontSize="12" Canvas.Top="54" Canvas.Left="107"  Grid.Column="1" />
+        </Canvas>
+
+        <CheckBox Content="Default Video" Height="16" HorizontalAlignment="Left" Margin="175,237,0,0" Name="chkDefaultVideo" VerticalAlignment="Top" Foreground="#FFF0F0F0" Grid.ColumnSpan="2" Checked="chkDefaultVideo_Checked" Unchecked="chkDefaultVideo_Unchecked" />
+        <Label Content="Video Title:" FontSize="14" FontWeight="Bold" Foreground="#FFA1A7AC" Height="28" HorizontalAlignment="Left" Margin="50,90,0,0" Name="lblVideoTitle" VerticalAlignment="Top" Width="83" />
+        <Label Content="Description:" FontSize="14" FontWeight="Bold" Foreground="#FFA1A7AC" Height="28" HorizontalAlignment="Left" Margin="46,134,0,0" Name="lblDescription" VerticalAlignment="Top" Width="83" />
+        <Label Content="Error:" FontSize="14" FontWeight="Bold" Foreground="#FFFF1D00" Height="22" HorizontalAlignment="Left" Margin="46,335,0,0" Name="lblError" VerticalAlignment="Top" Width="345" Visibility="Hidden" Grid.ColumnSpan="2" />
+        <Label Content="Please enter a video title" FontSize="12" FontWeight="Normal" Foreground="#FFC52120" Height="15" HorizontalAlignment="Left" Margin="172,70,0,0" Name="lblVideoTitleError" VerticalAlignment="Top" Width="228" Visibility="Hidden" Grid.ColumnSpan="2" />
+        <Label Content="*" Height="24" HorizontalAlignment="Left" Margin="170,102,0,0" Name="label1" VerticalAlignment="Top" IsEnabled="False" Foreground="#FFEE0E0E" Width="14" Visibility="Hidden" Grid.Column="1" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,9,14,0" Name="btnClose" VerticalAlignment="Top" Width="22" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click" Grid.Column="1" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,9,35,0" Name="button2" VerticalAlignment="Top" Width="30" Style="{StaticResource MinimizeRadialButton}" Click="button2_Click" Grid.Column="1" />
+        <CheckBox Content="Extract Images" Height="16" HorizontalAlignment="Left" Margin="175,264,0,0" Name="ChkExtractImages" Foreground="White" VerticalAlignment="Top" Grid.ColumnSpan="2" Checked="ChkExtractImages_Checked" Unchecked="ChkExtractImages_Unchecked"/>
+        <Label Name="lblMessage" Visibility="Hidden" Height="46"  HorizontalAlignment="Left"   Margin="123,375,0,0"  VerticalAlignment="Top" Grid.ColumnSpan="2" Width="268" Foreground="Red"/>
+        <RadioButton Content="Record Video" Grid.ColumnSpan="2" Height="16" HorizontalAlignment="Left" Margin="174,210,0,0" Checked="rbRecord_Checked" Visibility="Visible" Name="rbRecord" VerticalAlignment="Top" Foreground="White" Width="110" />
+        <RadioButton Content="Browse Video" Height="16" HorizontalAlignment="Left" Visibility="Visible"   Margin="77,211,0,0" Name="rbBrowse" Checked="rbBrowse_Checked" VerticalAlignment="Top" Grid.Column="1" Foreground="White"  Width="95" IsChecked="{Binding isBrowserselected}"/>
+    </Grid>
+
+</Window>

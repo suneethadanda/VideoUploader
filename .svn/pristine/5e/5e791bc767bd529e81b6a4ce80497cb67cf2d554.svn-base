@@ -1,0 +1,311 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Configuration;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+using System.Xml;
+using System.IO;
+using System.Diagnostics;
+
+using System.ComponentModel;
+
+
+
+namespace WpfVideoUploader
+{
+    /// <summary>
+    /// Interaction logic for Login.xaml
+    /// </summary>
+    public partial class Login : Window
+    {
+
+        #region Fields
+        private RoofTop oRoofTop=null;
+        private bool _isUserValidated = false;
+        string _userName = string.Empty;
+        string _passWord = string.Empty;
+        public Dictionary<string, string> lstRootTop;
+        private BackgroundWorker backgroundWorker;
+        #endregion
+
+        //###################################################################################################################################
+
+        #region Constructor
+        public Login()
+        {
+            InitializeComponent();
+            backgroundWorker =
+                            ((BackgroundWorker)this.FindResource("backgroundWorker"));
+            btnLogin.IsEnabled = false;
+            oRoofTop = new RoofTop();
+
+            //Uninstall code
+            string[] arguments = Environment.GetCommandLineArgs();
+            string argument = null;
+            //string CAVEDIT_LIB_NAME = "CAVEditLib.dll";
+            //string libPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\" + CAVEDIT_LIB_NAME;
+            foreach (string argument_loopVariable in arguments)
+            {
+                argument = argument_loopVariable;
+                if (argument.Split('=')[0].ToLower() == "/u")
+                {
+                    string guid = argument.Split('=')[1];
+                    string path = Environment.GetFolderPath(Environment.SpecialFolder.System);
+                    ProcessStartInfo si = new ProcessStartInfo(path + "\\msiexec.exe", "/i " + guid);
+                    Process.Start(si);
+                    Close();
+                    System.Windows.Application.Current.Shutdown();
+                    System.Environment.Exit(0);
+                }
+            }
+
+            if (!File.Exists(Common.SettingsFile))
+            {
+                ShowSetting();
+            }
+        }
+        #endregion
+
+        //##################################################################################################################################
+
+        #region Events
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        //Coment for time being
+        private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            // each time something is typed into or removed from either textbox,
+            //    we will check to see if anything is in both textboxes.
+            // if both contain a value(other than spaces), the button is enabled.
+            // if one or both boxes are blank, the button is disabled.
+            if (txtPassword.Password.Trim().Length > 0 &&
+                txtUserName.Text.Trim().Length > 0)
+            {
+                btnLogin.IsEnabled = true;
+            }
+            else
+            {
+                btnLogin.IsEnabled = false;
+            }
+        }
+
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = LoginUser(_userName, _passWord);
+        }
+
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            bool loginStatus = (bool)e.Result;
+
+            if (loginStatus)
+            {
+                Spinner.Visibility = Visibility.Hidden;
+                oRoofTop.PopulateRooftop(lstRootTop);
+                oRoofTop.RooftopValues = lstRootTop;
+                oRoofTop.LoggedInUser = txtUserName.Text;
+                this.Close();
+                oRoofTop.ShowDialog();
+            }
+            else
+            {
+                lblError.Visibility = Visibility.Visible;
+                btnLogin.Visibility = Visibility.Visible;
+                Spinner.Visibility = Visibility.Hidden;
+                lblLoading.Visibility = Visibility.Hidden;
+            }
+
+        }
+
+        private void btnLogin_Click(object sender, RoutedEventArgs args)
+        {
+            btnLogin.Visibility = Visibility.Hidden;
+            lblError.Visibility = Visibility.Hidden;
+            _userName = txtUserName.Text;
+            _passWord = txtPassword.Password;
+            Spinner.Visibility = Visibility.Visible;
+            backgroundWorker.RunWorkerAsync();
+        }
+        #endregion
+
+        //#################################################################################################################
+
+        #region PrivateMethods
+        private bool LoginUser(string userName, string passWord)
+        {
+            try
+            {
+                Dispatcher.Invoke(new Action(()=> lblError.Visibility = Visibility.Hidden));
+                
+                if (Common.IsConnectedToInternet())
+                {
+                    Dispatcher.Invoke(new Action(()=>btnLogin.IsEnabled = false));
+                    Dispatcher.Invoke(new Action(() => lblLoading.Visibility = Visibility.Visible));
+
+                    if (ValidateUser(userName, passWord))
+                    {
+                        Common.WriteLog("User " + userName + " Logged In");
+                        _isUserValidated = true;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    _isUserValidated = false;
+                    Dispatcher.Invoke(new Action(() => lblError.Visibility = Visibility.Visible));
+                    Dispatcher.Invoke(new Action(() => lblError.Content = ResourceTxt.NoInternet));
+                    Common.WriteLog(ResourceTxt.NoInternet);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("btnLogin_Click: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Validating User
+        /// </summary>
+        /// <param name="pstrUserName"></param>
+        /// <param name="pstrPassword"></param>
+        /// <returns></returns>
+        private bool ValidateUser(string pstrUserName, string pstrPassword)
+        {
+            try
+            {
+                bool _failed = false;
+
+                //var encoding = new ASCIIEncoding();
+                var postData = "ACTION=LOGIN";
+                postData += ("&USER=" + pstrUserName);
+                postData += ("&PWD=" + pstrPassword);
+
+                string serverData = string.Empty;
+                serverData = Common.GetServerData(postData);
+
+                if (string.IsNullOrEmpty(serverData))
+                    return false;
+
+                if (serverData.Contains("InValid Login"))
+                {
+                   Dispatcher.Invoke(new Action(()=> lblError.Content = ResourceTxt.InValidLogin));
+                    _failed = true;
+                }
+                else if (serverData.Equals("WebError"))
+                {
+                    Dispatcher.Invoke(new Action(()=>lblError.Content  = ResourceTxt.GetServerData_WebError));
+                    _failed = true;
+                }
+                else if (serverData.Equals("Error"))
+                {
+                    Dispatcher.Invoke(new Action(()=>lblError.Content = ResourceTxt.GetServerData_Error));
+                    _failed = true;
+                }
+
+                if (_failed)
+                {
+                    Dispatcher.Invoke(new Action(()=>lblError.Visibility = Visibility.Visible));
+                    Dispatcher.Invoke(new Action(()=>btnLogin.IsEnabled = true));
+                    return false;
+                }
+
+                XmlDocument xDoc = new XmlDocument();
+                xDoc.LoadXml(serverData);
+                GetRooftopValues(serverData);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("ValidateUser: " + ex.Message);
+                return false;
+            }
+        }
+
+
+        public void GetRooftopValues(string xmlDoc)
+        {
+            XmlReader reader = null;
+            lstRootTop = new Dictionary<string, string>();
+            string strKey = null;
+            string strValue = null;
+            try
+            {
+                using (reader = XmlReader.Create(new StringReader(xmlDoc)))
+                {
+                    while (reader.Read())
+                    {
+                        reader.ReadToFollowing("rooftop");
+                        reader.MoveToFirstAttribute();
+                        strKey = reader.Value;
+                        reader.Read();
+                        strValue = reader.Value;
+                        if (!string.IsNullOrEmpty(strValue))
+                        {
+                            lstRootTop.Add(strKey, strValue);
+                        }
+                        strKey = null;
+                        strValue = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("GetRoofTopValues: " + ex.Message);
+            }
+            finally
+            {
+                // Do the necessary clean up.
+                if (reader != null)
+                    reader.Close();
+            }
+        }
+
+        private void ShowSetting()
+        {
+            try
+            {
+                Settings oSetting = new Settings();
+                oSetting.ShowDialog();
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show(ResourceTxt.CannotLoadSettings);
+            }
+        }
+
+        #endregion
+
+        //############################################################################################
+    }
+}

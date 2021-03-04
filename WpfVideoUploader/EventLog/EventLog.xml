@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<EventLog>
+  <EventData>
+    <CreatedData>11/13/2013 3:07:37 PM</CreatedData>
+    <EventType>Create</EventType>
+    <Message>Create</Message>
+  </EventData>
+  <EventData>
+    <CreatedData>11/13/2013 3:08:03 PM</CreatedData>
+    <EventType>Information</EventType>
+    <Message>Setting Created</Message>
+  </EventData>
+</EventLog>

@@ -1,0 +1,14 @@
+﻿<Window x:Class="WpfVideoUploader.AboutUs"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AboutUs" Height="390" Width="503"
+        WindowStyle="None" WindowState="Normal"  AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Window.Background="Transparent" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/WpfVideoUploader;component/Images/aboutus_bg.png" />
+        </Grid.Background>
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,12,16,0" Name="btnClose" VerticalAlignment="Top" Width="29" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click" />
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,12,43,0" Name="btnMinimize" VerticalAlignment="Top" Width="32" Style="{StaticResource MinimizeRadialButton}" Click="btnMinimize_Click" />
+    </Grid>
+</Window>

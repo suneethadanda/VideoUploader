@@ -1,0 +1,178 @@
+﻿<Window x:Class="WpfVideoUploader.ExtractImage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Image Extracting Status" Height="780" Width="657"  
+        xmlns:cm="clr-namespace:System.ComponentModel;assembly=System" 
+        Window.Background="Transparent" WindowStyle="None" Closing="Window_Closing"  Unloaded="Window_Unloaded"
+        WindowState="Normal" MouseLeftButtonDown="Window_MouseLeftButtonDown"  AllowsTransparency="True"  WindowStartupLocation="Manual" Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <Style x:Key="Button_Link" TargetType="{x:Type Hyperlink}">
+            <Setter Property="TextDecorations" Value="None" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Height="700" Width="602">
+
+
+
+        <Grid.Resources>
+            <ResourceDictionary Source="Styles\ExpressionLight.xaml"/>
+
+
+        </Grid.Resources>
+        <Grid.Background>
+            <ImageBrush ImageSource="/WpfVideoUploader;component/Images/ImageExtractionStatus_bg.png.png" />
+        </Grid.Background>
+        <Button Content="Button" Height="23" HorizontalAlignment="Right" Margin="0,7,10,0" Name="btnClose" VerticalAlignment="Top" Width="25" Style="{StaticResource CloseRadialButton}" Click="btnClose_Click"   />
+        <Button Content="Button" Height="23" Margin="542,6,37,0" Name="btnMinimize" VerticalAlignment="Top" Style="{StaticResource MinimizeRadialButton}" Click="btnMinimize_Click"/>
+        <Label Content="Error" Height="17"  SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="29,40,0,0" Name="lblError" VerticalAlignment="Top" Width="432" Foreground="Red" Visibility="Hidden" />
+
+        <GroupBox SnapsToDevicePixels="True" Header="Currently Extracting" Height="130" Margin="25,88,25,0" Name="groupBox1" VerticalAlignment="Top" Foreground="#FF727272" FontSize="14" Background="#FF1E2429">
+            <StackPanel Width="546">
+
+            </StackPanel>
+        </GroupBox>
+        <Label Content="" Height="18" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="150,128,0,0" Name="lblUploadingVehiceKey" VerticalAlignment="Top" Width="296" Foreground="#FFFEFEFE" BorderBrush="#FF557438" />
+        <Label Content="" Height="20" SnapsToDevicePixels="True" Margin="150,148,156,532" Name="lblUploadingFileName" Width="296" Foreground="#FFFEFEFE" BorderBrush="#FF557438" />
+        <ProgressBar Height="18" SnapsToDevicePixels="True" HorizontalAlignment="Left" Margin="38,176,0,0" Name="pbUploadProgress" VerticalAlignment="Top" Width="527" Foreground="#FFAAC70A" />
+        <Label Content="Out File Name:" SnapsToDevicePixels="True" Name="label4" Foreground="#FFA7FF00" BorderBrush="#FF557438" Height="24" Width="92" Margin="61,149,449,527" />
+        <Label Content="Vehicle Key:" SnapsToDevicePixels="True" Name="label3" Foreground="#FFA7FF00" BorderBrush="#FF557438" Margin="61,129,467,546" />
+
+
+        <Label Content="Videos Ready To Upload" Visibility="Hidden" Height="28"  HorizontalAlignment="Left" Margin="29,454,0,0" Name="label5" VerticalAlignment="Top" FontSize="14" Foreground="#FF727272" />
+        <Label Content="Extracted Videos" Height="20" HorizontalAlignment="Left" Margin="28,373,0,0" Name="label6" VerticalAlignment="Top" Foreground="#FFFEFEFE" Width="141" FontSize="14" BorderBrush="#FF557438" />
+        <Label Content="Upload Error" Height="15" HorizontalAlignment="Left" Margin="28,41,0,0" Name="lblUploadError" VerticalAlignment="Top" Foreground="Red" Visibility="Hidden" Width="465" />
+        <Label Content="Videos Ready To Extract" Height="20" Visibility="Hidden" HorizontalAlignment="Left" Margin="26,70,0,0" Name="lblEncodingQueue" VerticalAlignment="Top" Width="198" FontSize="14" Foreground="#FFFEFEFE" />
+        <Grid Height="90" HorizontalAlignment="Left" Name="grid5" VerticalAlignment="Top" Width="549" Margin="27,387,0,0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="357*" />
+                <ColumnDefinition Width="192*" />
+            </Grid.ColumnDefinitions>
+            <ListView Name="slvVideoUploaded" ItemsSource="{Binding}" BorderThickness="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden" Margin="1,13,2,-41" Grid.ColumnSpan="2">
+                <ListView.View>
+                    <GridView x:Name="slvUploadedGrid" AllowsColumnReorder="False">
+                        <GridView.Columns>
+                            <GridViewColumn Width="200" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />
+                            <GridViewColumn Width="56" Header="Stock#" DisplayMemberBinding="{Binding Path=Stock}" />
+                            <GridViewColumn Width="208" Header="VIN#" DisplayMemberBinding="{Binding Path=VIN}" />
+                            <GridViewColumn Width="78" Header="View Images">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Background="#FF2A2E33" Foreground="#FFA7FF00" FontFamily="Tahoma"   Height="20" Width="59">
+                                            <StackPanel>
+                                                <TextBlock Name="urlToContent" MinWidth="80" Width="Auto">
+                                                       <Hyperlink Style="{StaticResource Button_Link}"  Click="Hyperlink_Click" Name="hlkURL" TargetName="{Binding Path=OutputFileName}" NavigateUri="{Binding Path=Stock}" Tag="{Binding Path=VIN}">
+                                                       <TextBlock HorizontalAlignment="Center" Text="    View     "  Foreground="#FFA7FF00"  FontSize="12"></TextBlock>
+                                                       </Hyperlink>
+                                            </TextBlock>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+
+
+
+        <Grid Height="90" HorizontalAlignment="Left" Name="grid6" VerticalAlignment="Top" Width="549" Margin="27,403,0,0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="315*" />
+                <ColumnDefinition Width="234*" />
+            </Grid.ColumnDefinitions>
+            <ListView Name="slvExtractedVideo" ItemsSource="{Binding}" BorderThickness="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden" Margin="0,149,0,-179" Grid.ColumnSpan="2">
+                <ListView.View>
+                    <GridView x:Name="slvExtractedGrid" AllowsColumnReorder="False">
+                        <GridView.Columns>
+
+                            <GridViewColumn Header="" Width="25">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Name="ExtractedVideosCheckBox" IsChecked="{Binding IsSelected}" Click="ExtractedVideosCheckBox_Click"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <!--<GridViewColumn Width="200" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />-->
+                            <GridViewColumn Width="156" Header="Stock#" DisplayMemberBinding="{Binding Path=Stock}" />
+                            <GridViewColumn Width="190" Header="VIN#" DisplayMemberBinding="{Binding Path=VIN}" />
+                            <GridViewColumn Width="92" Header="View Images">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Background="#FF2A2E33" Foreground="#FFA7FF00" FontFamily="Tahoma"   Height="20" Width="59">
+                                            <StackPanel>
+                                                <TextBlock Name="urlToContent" MinWidth="80" Width="Auto">
+                                                       <Hyperlink Style="{StaticResource Button_Link}"  Click="Hyperlink_Click" Name="hlkURL" TargetName="{Binding Path=OutputFileName}" NavigateUri="{Binding Path=Stock}" Tag="{Binding Path=VIN}">
+                                                       <TextBlock HorizontalAlignment="Center" Text="    View     "  Foreground="#FFA7FF00"  FontSize="12"></TextBlock>
+                                                       </Hyperlink>
+                                            </TextBlock>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Width="101" Header="Status">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Name="ExtractionStatus" Foreground="Black" MinWidth="80" Width="Auto" Text="{Binding Path=ExtractionStatus}" >
+                                                
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+
+                            <!--<GridViewColumn Width="120"  Header="Status" DisplayMemberBinding="{Binding Path=ExtractionStatus}" >
+
+                            </GridViewColumn>-->
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+
+
+
+        <!--<Grid SnapsToDevicePixels="True" Margin="28,144,26,429">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="112*" />
+                <ColumnDefinition Width="20*" />
+                <ColumnDefinition Width="22*" />
+                <ColumnDefinition Width="38*" />
+                <ColumnDefinition Width="68*" />
+                <ColumnDefinition Width="166*" />
+                <ColumnDefinition Width="44*" />
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="42" />
+            </Grid.ColumnDefinitions>
+
+
+
+            <Label BorderBrush="#FF557438" Foreground="#FFFEFEFE" HorizontalAlignment="Left" Margin="5,17,0,-17" Name="lblUploadingFileSize" SnapsToDevicePixels="True" Width="73" Grid.Column="7" Grid.ColumnSpan="2" />
+            <Label BorderBrush="#FF557438" Foreground="#FFFEFEFE" HorizontalAlignment="Left" Margin="5,2,0,-2" Name="lblCompUploadingSize" SnapsToDevicePixels="True" Width="73" Grid.Column="7" Grid.ColumnSpan="2" />
+
+        </Grid>-->
+
+        <Label BorderBrush="#FF557438" Content="In Queue:" Foreground="White" Height="17" HorizontalAlignment="Left" Width="105" Margin="30,223,0,0" Name="label1" VerticalAlignment="Top" />
+        <ListView Name="slvUploading" ItemsSource="{Binding}" BorderThickness="0" Margin="27,247,26,334" SelectedIndex="0" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+            <ListView.View>
+                <GridView x:Name="slvUploadingGrid" AllowsColumnReorder="False">
+                    <GridView.Columns>
+                        <GridViewColumn Width="246" Header="Vehicle Key" DisplayMemberBinding="{Binding Path=VehicleKey}" />
+                        <GridViewColumn Width="56" Header="Stock#" DisplayMemberBinding="{Binding Path=Stock}" />
+                        <GridViewColumn Width="241" Header="VIN#" DisplayMemberBinding="{Binding Path=VIN}" />
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Label BorderBrush="#FF557438" Content="Total Extracted Videos" FontSize="14" Foreground="#FFFEFEFE" Height="20" HorizontalAlignment="Left" Margin="26,526,0,0" Name="label2" VerticalAlignment="Top" Width="141" />
+        <Button Content="Delete" Height="20" HorizontalAlignment="Left" Name="btnDelExtractedVideos" VerticalAlignment="Top" Width="56" Background="#FF2A2E33" Foreground="#FFA7FF00" Click="btnDelExtractedVideos_Click" Margin="516,525,0,0" />
+    </Grid>
+
+</Window>

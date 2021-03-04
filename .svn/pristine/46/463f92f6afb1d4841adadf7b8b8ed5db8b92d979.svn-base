@@ -1,0 +1,1039 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using CAVEditLib;
+using System.Xml.Linq;
+
+using System.IO;
+using System.Data;
+using System.Xml;
+using System.Diagnostics;
+using System.ComponentModel;
+
+namespace WpfVideoUploader
+{
+    /// <summary>
+    /// Interaction logic for Home.xaml
+    /// </summary>
+    public partial class Home : Window
+    {
+        //#####################################################################################
+        #region Fields
+
+        private RoofTop roofTop;
+        private Dictionary<string, int> listMake;
+        private Dictionary<string, string> listModel;
+        private ICAVConverter mConverter = null;
+        private string strMakeSelected = string.Empty;
+        private string strModelSelected = string.Empty;
+        private bool bgWorkerBusy;
+        Status oStatus = new Status();
+        string serverData = string.Empty;
+        bool isGridView = true;
+        XDocument xDoc = null;
+        VehicleList vehicleList;// = new VehicleList();
+        private BackgroundWorker backgroundWorker;
+        private BackgroundWorker listLoaderThread;
+
+        #endregion
+
+        //#####################################################################################
+
+        #region Properties
+
+        public RoofTop HRooftop 
+        {
+            get { return roofTop; }
+            set { roofTop = value; }
+        }
+
+        private string _loggedInUser = string.Empty;
+        public string LoggedInUser
+        {
+            get
+            {
+                return _loggedInUser;
+            }
+            set
+            {
+                _loggedInUser = value;
+            }
+        }
+
+        private string _roofTopKey = string.Empty;
+        public string RooftopKey
+        {
+            get
+            {
+                return _roofTopKey;
+            }
+            set
+            {
+                _roofTopKey = value;
+            }
+        }
+
+        private string _roofTopText = string.Empty;
+        public string RooftopText
+        {
+            get
+            {
+                return _roofTopText;
+            }
+            set
+            {
+                _roofTopText = value;
+            }
+        }
+        #endregion
+
+        //#####################################################################################
+
+        #region Constructor
+        public Home()
+        {
+            vehicleList = new VehicleList();
+            InitializeComponent();
+            dtGrid.CanUserAddRows = false;
+            Common.OHome = this;
+            backgroundWorker =
+                            ((BackgroundWorker)this.FindResource("backgroundWorker"));
+            listLoaderThread =
+                            ((BackgroundWorker)this.FindResource("listLoaderThread"));
+        }
+        #endregion
+
+        //#####################################################################################
+
+        #region Events
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            PopulateVehicleMake(listMake);
+            cmbMake.Text = ResourceTxt.VehicleMakeAll;
+            cmbModel.Text = ResourceTxt.VehicleModelAll;
+            lblLoggedUser.Content = LoggedInUser;
+            dtGrid.ItemsSource = vehicleList;
+            listiew.ItemsSource = vehicleList;
+            dtGrid.Visibility = Visibility.Hidden;
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void Image_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Image imgage = (Image)sender;
+            popUpImag.Source = imgage.Source;
+            imagePopUp.IsOpen = true;
+            imagePopUp.StaysOpen = false;
+        }
+
+        private void Image_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            imagePopUp.IsOpen = false;
+            imagePopUp.StaysOpen = false;
+        }
+
+        private void btnToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (dtGrid.Visibility == Visibility.Visible)
+            {
+                listiew.Visibility = Visibility.Visible;
+                dtGrid.Visibility = Visibility.Hidden;
+                listiew.Items.Refresh();
+                isGridView = false;
+            }
+            else
+            {
+                dtGrid.Visibility = Visibility.Visible;
+                listiew.Visibility = Visibility.Hidden;
+                dtGrid.Items.Refresh();
+                isGridView = true;
+            }
+
+        }
+
+        private void chkPendingVideo_Click(object sender, RoutedEventArgs e)
+        {
+            chkPendingVideo.Refresh();
+            vehicleList.Clear();
+            listiew.Items.Refresh();
+            dtGrid.Items.Refresh();
+            PopulateVehicleData();            
+        }
+
+        private void cmbMake_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (bgWorkerBusy)
+                    return;
+
+                xDoc = XDocument.Parse(serverData);
+                if (cmbMake.Items.Count > 0)
+                {
+                    if (cmbMake.SelectedItem != null)
+                    { 
+                        strMakeSelected = cmbMake.SelectedItem.ToString();
+                        PopulateVehicleModel(strMakeSelected);
+
+                        string strResult = string.Empty;
+
+                        if (strMakeSelected != ResourceTxt.VehicleMakeAll)
+                        {
+                            var records = from book in xDoc.Root.Elements("vehicle")
+                                          where (string)book.Attribute("make") == strMakeSelected.ToString()
+                                          select book;
+
+                            if (chkPendingVideo.IsChecked == true)
+                            {
+                                records = from book in xDoc.Root.Elements("vehicle")
+                                          where (string)book.Attribute("make") == strMakeSelected.ToString() &&
+                                                (string)book.Attribute("Pending") == "1"
+                                          select book;
+                            }
+
+                            foreach (var record in records)
+                            {
+                                strResult = strResult + record;
+                            }
+                        }
+                        else
+                        {
+                            var records = from book in xDoc.Root.Elements("vehicle")
+                                          select book;
+
+                            if (chkPendingVideo.IsChecked == true)
+                            {
+                                records = from book in xDoc.Root.Elements("vehicle")
+                                          where (string)book.Attribute("Pending") == "1"
+                                          select book;
+                            }
+
+                            foreach (var record in records)
+                            {
+                                strResult = strResult + record;
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(strResult) && HRooftop.IsBackgroudBusy==false)
+                        {
+                            strResult = "<Vehicles>" + strResult;
+                            strResult += "</Vehicles>";
+                            listLoaderThread.RunWorkerAsync(strResult);
+                            //BindVehicleData(strResult);
+                        }
+                        else
+                        {
+                            listiew.Items.Clear();
+                            dtGrid.Items.Clear();
+                            listiew.Refresh();
+                            dtGrid.Refresh();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("Home.cmbMake_SelectionChanged:" + ex.Message);
+            }
+        }
+
+        private void cmbModel_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                xDoc = XDocument.Parse(serverData);
+
+                if (cmbModel.SelectedItem != null && cmbModel.Text != ResourceTxt.VehicleModelAll)
+                {
+                    if (strModelSelected != cmbModel.SelectedItem.ToString())
+                    {
+                        strModelSelected = cmbModel.SelectedItem.ToString();
+                        if (cmbModel.Items.Count > 0)
+                        {
+                            string strMake = cmbMake.SelectedItem.ToString();
+                            string strResult = string.Empty;
+
+                            if (strModelSelected != ResourceTxt.VehicleModelAll)
+                            {
+                                var records = from book in xDoc.Root.Elements("vehicle")
+                                              where (string)book.Attribute("model") == strModelSelected.ToString()
+                                              select book;
+
+                                if (chkPendingVideo.HasContent)
+                                {
+                                    records = from book in xDoc.Root.Elements("vehicle")
+                                              where (string)book.Attribute("model") == strModelSelected.ToString() &&
+                                                    (string)book.Attribute("Pending") == "1"
+                                              select book;
+                                }
+
+                                foreach (var record in records)
+                                {
+                                    strResult = strResult + record;
+                                }
+                            }
+                            else
+                            {
+                                var records = from book in xDoc.Root.Elements("vehicle")
+                                              where (string)book.Attribute("make") == strMake.ToString()
+                                              select book;
+
+                                if (chkPendingVideo.HasContent)
+                                {
+                                    records = from book in xDoc.Root.Elements("vehicle")
+                                              where (string)book.Attribute("make") == strModelSelected.ToString() &&
+                                                    (string)book.Attribute("Pending") == "1"
+                                              select book;
+                                }
+
+                                foreach (var record in records)
+                                {
+                                    strResult = strResult + record;
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(strResult))
+                            {
+                                strResult = "<Vehicles>" + strResult;
+                                strResult += "</Vehicles>";
+                                listLoaderThread.RunWorkerAsync(strResult);
+                                //BindVehicleData(strResult);
+                            }
+                            else
+                            {
+                                listiew.Items.Clear();
+                                dtGrid.Items.Clear();
+                                listiew.Refresh();
+                                dtGrid.Refresh();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("cmbModel_SelectedIndexChanged: " + ex.Message);
+            }
+
+        }
+
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                foreach (Window frm in System.Windows.Application.Current.Windows)
+                {
+                    if (frm is Status)
+                    {
+                        frm.Close();
+                        break;
+                    }
+                }
+                Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("btnLogout_Click: " + ex.Message);
+            }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                if (mConverter != null)
+                {
+                    mConverter.ClearTasks();
+                }
+                if (null != this.oStatus)
+                {
+                    oStatus.Close();
+                }
+
+                foreach (Window frm in Application.Current.Windows)
+                {
+                    if (frm is Status)
+                    {
+                        frm.Close();
+                        break;
+                    }
+                }
+
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("Home_FormClosing: " + ex.Message);
+            }
+        }
+
+        private void btnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            if (bgWorkerBusy == false)
+            {
+                listiew.Visibility = Visibility.Hidden;
+                dtGrid.Visibility = Visibility.Hidden;
+                ReloadDataFromServer();
+            }
+        }
+
+        private void DG_Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            Vehicle selecedVehicle = (Vehicle)dtGrid.SelectedItem;
+            UploadStatusListQueue(selecedVehicle);
+        }
+
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
+        {
+            vehicleList.Clear();
+            listiew.Items.Refresh();
+            dtGrid.Items.Refresh();
+            if (!string.IsNullOrEmpty(txtStock.Text))
+            {
+                FindRecord(txtStock.Text);
+            }
+            else
+            {
+                PopulateVehicleData();
+            }
+
+        }
+
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            Settings oSettings = new Settings();
+
+            oSettings.ShowDialog();
+        }
+
+        private void btnAboutUs_Click(object sender, RoutedEventArgs e)
+        {
+            AboutUs oAboutUs = new AboutUs();
+            oAboutUs.ShowDialog();
+        }
+
+        private void btnQueue_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Add pending uploadable files from the last cycle to Uploading queue
+                oStatus.AddUploadingQueueFromFile();
+
+                oStatus.Show();
+                oStatus.Focus();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("btnQueue_Click: " + ex.Message);
+            }
+        }
+
+        private void btnReload_Click(object sender, RoutedEventArgs e)
+        {
+            txtStock.Text = string.Empty;
+        }
+
+
+        private void lnkText_MouseEnter(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Hand;
+        }
+
+        private void lnkText_MouseLeave(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Arrow;
+        }
+
+        #endregion
+
+        //#####################################################################################
+
+        #region PrivateMethods
+
+        public void PopulateVehicleMake(Dictionary<string, int> listVehicleMake)
+        {
+            try
+            {
+                cmbMake.Items.Clear();
+                cmbMake.Items.Add(ResourceTxt.VehicleMakeAll);
+
+                foreach (KeyValuePair<string, int> kvp in listVehicleMake)
+                {
+                    cmbMake.Items.Add(kvp.Key);
+                }                
+                PopulateVehicleModel(ResourceTxt.VehicleMakeAll);
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("PopulateVehicleMake: " + ex.Message);
+            }
+        }
+
+        public void PopulateVehicleModel(string makeValue)
+        {
+            try
+            {
+                cmbModel.Items.Clear();
+                cmbModel.Items.Add(ResourceTxt.VehicleModelAll);
+                foreach (KeyValuePair<string, string> kvp in listModel)
+                {
+                    if (kvp.Value == makeValue)
+                    {
+                        cmbModel.Items.Add(kvp.Key);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("PopulateVehicleModel: " + ex.Message);
+            }
+        }
+
+        public void PopulateRooftop(Dictionary<string, string> listRooftop)
+        {
+            try
+            {
+                cmbRoofTop.Items.Add(ResourceTxt.RoofTopSelect);
+                foreach (KeyValuePair<string, string> kvp in listRooftop)
+                {
+                    WpfVideoUploader.ComboBoxItem cItem = new WpfVideoUploader.ComboBoxItem(kvp.Key, kvp.Value);
+                    cmbRoofTop.Items.Add(cItem);
+                }
+                cmbRoofTop.Text = RooftopText;
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("PopulateRoofTop:" + ex.Message);
+            }
+        }
+     
+        public void GetVehicleDataFromServer()
+        {
+            //var encoding = new ASCIIEncoding();
+            int pageCountinit = 1;
+            var postData = "ACTION=VEHICLELIST";
+            postData += ("&rooftop_key=" + RooftopKey);
+            postData += ("&PAGE=" + pageCountinit.ToString());
+            try
+            {
+                if (!Common.IsConnectedToInternet())
+                {
+                    lblError.Visibility = Visibility.Visible;
+                    lblError.Content = ResourceTxt.NoInternet;
+
+                    return;
+                }
+
+                serverData = Common.GetServerData(postData);
+
+                string totalpages = "totalpages=";
+
+                int totalpgindex = serverData.IndexOf(totalpages);
+                string pagecount = serverData.Substring(totalpgindex + totalpages.Length, 5);
+                pagecount = pagecount.Replace('"', ' ');
+                pagecount = pagecount.Replace('p', ' ');
+
+                int noOfPages = Convert.ToInt32(pagecount.Trim());
+
+                var postDataNew = "ACTION=VEHICLELIST";
+                postDataNew += ("&rooftop_key=" + RooftopKey);
+                serverData = string.Empty;
+                for (int i = 1; i <= noOfPages; i++)
+                {
+                    postDataNew += ("&PAGE=" + i.ToString());
+                    var serverDataNew = Common.GetServerData(postDataNew);
+                    if (string.IsNullOrEmpty(serverDataNew))
+                    {
+                        continue;
+                    }
+                    int index = serverDataNew.IndexOf("<vehicle");
+                    if (index == -1)
+                    {
+                        continue;
+                    }
+
+                    serverDataNew = serverDataNew.Remove(0, serverDataNew.IndexOf("<vehicle"));
+                    int x = serverDataNew.IndexOf("</search>");
+                    serverDataNew = serverDataNew.Remove(x, (serverDataNew.Length - x));
+                    serverData += serverDataNew;
+                }
+
+                if (string.IsNullOrEmpty(serverData))
+                {
+                    return;
+                }
+
+                if (serverData.Equals("WebError"))
+                {
+                    lblError.Visibility = Visibility.Visible;
+                    lblError.Content = ResourceTxt.GetServerData_WebError;
+                    return;
+                }
+                else if (serverData.Equals("Error") || serverData.Contains("Fatal error"))
+                {
+                    lblError.Visibility = Visibility.Visible;
+                    lblError.Content = ResourceTxt.GetServerData_Error;
+                    return;
+                }
+
+                int dataIndex = serverData.IndexOf("<vehicle");
+                if (dataIndex == -1)
+                {
+                    lblNoOfRecordsValue.Content= ResourceTxt.NoRecordsFound;
+                    listiew.Visibility = Visibility.Hidden;
+                    dtGrid.Visibility = Visibility.Hidden;
+                    return;
+                }
+             
+                serverData = "<Vehicles>" + serverData;
+                serverData += "</Vehicles>";
+
+                //PopulateVehicleData();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("GetVehicleDataFromServer: " + ex.Message);
+                return;
+            }
+        }
+        
+        public void PopulateVehicleData()
+        {
+            try
+            {
+                string strRecords = string.Empty;
+                string strCurrentModel = string.Empty;
+                string strCurrentMake = string.Empty;
+
+                if (chkPendingVideo.IsChecked == true)
+                {
+                    if (cmbModel.Items.Count == 0 && cmbMake.Items.Count == 0)
+                    {
+                        strRecords = GetPendingRecordOnly(serverData);
+                    }
+                    else
+                    {
+                        strCurrentModel = cmbModel.SelectedItem.ToString();
+                        strCurrentMake = cmbMake.SelectedItem.ToString();
+
+                        strRecords = XmlDataQueryHelper.GetPendingRecordsOnCheck(serverData, strCurrentModel, strCurrentMake, lblNoOfRecordsValue);
+                    }
+                }
+                else
+                {
+                    if (cmbModel.Items.Count == 0 && cmbMake.Items.Count == 0)
+                    {
+                        strRecords = serverData;
+                    }
+                    else if ((cmbModel.SelectedItem.ToString() != ResourceTxt.VehicleModelAll) || (cmbMake.SelectedItem.ToString() != ResourceTxt.VehicleMakeAll))
+                    {
+                        strCurrentModel = cmbModel.SelectedItem.ToString();
+                        strCurrentMake = cmbMake.SelectedItem.ToString();
+                        strRecords = XmlDataQueryHelper.GetPendingRecordsOnUNCheck(serverData, strCurrentModel, strCurrentMake, lblNoOfRecordsValue);
+                    }
+                    else
+                    {
+                        strRecords = serverData;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(strRecords))
+                {
+                    Common.WriteLog("Record Not found, Check the XML data");
+                    return;
+                }
+                listMake = new Dictionary<string, int>();
+                listModel = new Dictionary<string, string>();
+
+                listLoaderThread.RunWorkerAsync(strRecords);
+                GetMakeModel();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("PopulateVehicleData: " + ex.Message);
+            }
+        }
+
+        private static string GetPendingRecordOnly(string serverXmlData)
+        {
+            try
+            {
+                XDocument xDocAll = XDocument.Parse(serverXmlData);
+
+                var records = from vehicleData in xDocAll.Root.Elements("vehicle")
+                              where (string)vehicleData.Attribute("Pending") == "1"
+                              select vehicleData;
+
+                XDocument xDocResults = null;
+                string strResult = string.Empty;
+
+                foreach (var record in records)
+                {
+                    xDocResults = new XDocument(record);
+                    strResult += xDocResults.ToString();
+                }
+
+                strResult = "<Vehicles>" + strResult;
+                strResult += "</Vehicles>";
+
+                return strResult;
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("GetPendingRecordOnly: " + ex.Message);
+                return null;
+            }
+        }
+
+        private void GetMakeModel()
+        {
+            try
+            {
+                XDocument doc = XDocument.Parse(serverData);
+                var records = from book in doc.Root.Elements("vehicle")
+                              select book;
+
+                int indexMake = 0;
+
+                foreach (var book in records)
+                {
+                    // See if Dictionary contains this make
+                    string makeValue = book.Attribute("make").Value;
+                    if (!listMake.ContainsKey(makeValue) && !string.IsNullOrEmpty(makeValue))
+                    {
+                        listMake.Add(makeValue, indexMake);
+                        indexMake++;
+                    }
+
+                    // See if Dictionary contains this make
+                    string modelValue = book.Attribute("model").Value;
+                    if (!listModel.ContainsKey(modelValue) && !string.IsNullOrEmpty(modelValue))
+                    {
+                        listModel.Add(modelValue, makeValue);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("GetMakeModel: " + ex.Message);
+            }
+        }
+
+        internal void UpdateStatus()
+        {
+            Vehicle selecedVehicle = (Vehicle)listiew.SelectedItem;
+            UploadStatusListQueue(selecedVehicle);
+        }
+
+        private void UploadStatusListQueue(Vehicle selecedVehicle)
+        {
+            try
+            {
+                string strGUID = selecedVehicle.VehicleKey;
+                string vehicleIndex = selecedVehicle.Index;
+
+                VideoInfo vInfo = new VideoInfo();
+                vInfo.RooftopKey = RooftopKey;
+                vInfo.OStatus = oStatus;
+
+                vInfo.VehicleKey = strGUID;
+                vInfo.VehicleIndex = vehicleIndex;
+                vInfo.ShowDialog();
+
+                string strInputFileName = vInfo.VideoFileName;
+                string strOutputFileName = vInfo.VideoGUID;
+
+                if (string.IsNullOrEmpty(strInputFileName))
+                    return;
+
+                lblMessage.Visibility = Visibility.Visible;
+                string strMessage = "Video file " + System.IO.Path.GetFileName(vInfo.VideoFileName) + " added to the queue.\n";
+                strMessage += ResourceTxt.VideoAddMessage;
+                lblMessage.Content = strMessage;
+
+                VehicleInfo oVehicleInfo = new VehicleInfo();
+                oStatus.OVehicleInfo = oVehicleInfo;
+                oVehicleInfo.VehicleKey = strGUID;
+                oVehicleInfo.InputFileName = strInputFileName;
+                oVehicleInfo.OutputFileName = strOutputFileName;
+                oVehicleInfo.TargetVideoHeight = selecedVehicle.Height;
+                oVehicleInfo.TargetVideoWidth = selecedVehicle.Width;
+                oVehicleInfo.RooftopKey = RooftopKey;
+                oVehicleInfo.VideoTitle = vInfo.VideoTitle;
+                oVehicleInfo.Description = vInfo.VideoDescription;
+                oVehicleInfo.IsDefault = vInfo.IsDefault;
+                oStatus.OStatus = oStatus;
+
+                if (strInputFileName != null)
+                {
+                    oStatus.VideoConverter();
+                }
+
+                //Show Status Queue for first time only
+                if (!oStatus.IsVisible)
+                {
+                    vInfo.OStatus.OHome = this;
+                    vInfo.OStatus.Show();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("lnkAddVideo_LinkClicked: " + ex.Message);
+            } 
+        }
+     
+        private void FindRecord(string piStock)
+        {
+         
+            try
+            {
+
+                IEnumerable<XElement> childList = from book in xDoc.Root.Elements("vehicle")
+                                                  where book.Attribute("stock").Value.ToLower().Contains(piStock.ToLower().ToString())
+                                                  select book;
+                StringBuilder sb = new StringBuilder();
+              
+
+                var myArray = childList.XmlSerializeAll().ToArray();
+
+                for (int i = 0; i < myArray.Count(); i++)
+                {
+                    sb = sb.Append(myArray[i].ToString());
+                }
+                string xml = "<?xml version=\"1.0\" encoding=\"utf-16\"?>";
+               
+                string strResult = sb.ToString();
+              
+                strResult = "<Vehicles>" + strResult.ToString();
+                strResult += "</Vehicles>";
+                strResult = strResult.Replace(xml, "");
+
+                listLoaderThread.RunWorkerAsync(strResult);
+                //BindVehicleData(strResult);
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("FindRecord: " + ex.Message);
+            }
+        }
+
+        private void BindVehicleData(string pstrServerData)
+        {
+            try
+            {
+                Dispatcher.Invoke(new Action(() => Spinner.Visibility = Visibility.Visible));
+                vehicleList.Clear();           
+                MemoryStream xmlStream = new MemoryStream(Encoding.UTF8.GetBytes(pstrServerData));
+                DataSet dataSet = new DataSet();
+                dataSet.ReadXml(xmlStream);
+
+                DataView dataView = new DataView(dataSet.Tables["Vehicle"]);
+                if (dataView.Count > 0)
+                {
+                    Dispatcher.Invoke(new Action(()=>lblNoOfRecordsValue.Content = dataView.Count.ToString()));
+                    foreach (DataRow dataRow in dataSet.Tables["Vehicle"].Rows)
+                    {
+                        Vehicle vehicle = new Vehicle();
+                        vehicle.Height = Convert.ToString(dataRow["h"]);
+                        vehicle.Image = Convert.ToString(dataRow["image"]);
+                        vehicle.Index = Convert.ToString(dataRow["index"]);
+                        vehicle.ListingType = Convert.ToString(dataRow["listing_type"]);
+                        vehicle.Make = Convert.ToString(dataRow["make"]);
+                        vehicle.Mileage = Convert.ToString(dataRow["mileage"]);
+                        vehicle.Model = Convert.ToString(dataRow["model"]);
+                        vehicle.Pending = Convert.ToString(dataRow["Pending"]);
+                        vehicle.Stock = Convert.ToString(dataRow["stock"]);
+                        vehicle.TotalViews = Convert.ToString(dataRow["totalviews"]);
+                        vehicle.Trim = Convert.ToString(dataRow["trim"]);
+                        vehicle.VehicleKey = Convert.ToString(dataRow["vehiclekey"]);
+                        vehicle.Videos = "Add Video(" + Convert.ToString(dataRow["videos"]) + ")";
+                        vehicle.Width = Convert.ToString(dataRow["w"]);
+                        vehicle.Year = Convert.ToString(dataRow["year"]);
+                        if (Convert.ToInt32(dataRow["Pending"]) ==1)
+                            vehicle.VideoImage = @"/WpfVideoUploader;component/Images/video_red.png";
+                        else
+                            vehicle.VideoImage = @"/WpfVideoUploader;component/Images/video_green.png";
+                        vehicleList.Add(vehicle);
+                    }
+                }
+                else
+                {
+                    Dispatcher.Invoke(new Action(()=>dtGrid.Visibility = Visibility.Hidden));
+                    Dispatcher.Invoke(new Action(()=>lblNoOfRecordsValue.Content = ResourceTxt.NoRecordsFound));
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("BindVehicleData: " + ex.Message);
+            }
+        }
+
+        private void ReloadDataFromServer()
+        {
+            try
+            {
+                WpfVideoUploader.ComboBoxItem cItem = (WpfVideoUploader.ComboBoxItem)cmbRoofTop.Items[cmbRoofTop.SelectedIndex];
+                string strRoofTop = cItem.Value.ToString();
+                lblNoOfRecords.Visibility = Visibility.Hidden;
+                lblNoOfRecordsValue.Visibility = Visibility.Hidden;
+                lblMessage.Visibility = Visibility.Hidden;
+                RooftopKey = strRoofTop;
+                Spinner.Visibility = Visibility.Visible;
+                dtGrid.Visibility = Visibility.Hidden;
+                listiew.Visibility = Visibility.Hidden;
+                //code to start spinner
+                backgroundWorker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("ReloadDataFromServer: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Update the Pending attribute value for the matching vehiclekey if Pending is true
+        /// </summary>
+        /// <param name="VehicleKey"></param>
+        public void UpdatePendingField(string vehicleKey)
+        {
+            try
+            {
+                XmlTextReader xmlTxtServerData = new XmlTextReader(new StringReader(serverData));
+                XElement xServerElement = XElement.Load(xmlTxtServerData);
+                XDocument xDocResults = null;
+
+                var result = from videos in xServerElement.Descendants("vehicle") where videos.Attribute("vehiclekey").Value == vehicleKey && videos.Attribute("Pending").Value == "1" select videos;
+
+                // Don't do anything if there is no matching vehiclekey with Pending
+                if (result.Count() == 0)
+                    return;
+
+                result = from videos in xServerElement.Descendants("vehicle") select videos;
+                StringBuilder strResult = new StringBuilder();
+                foreach (XElement xEle in result.ToList())
+                {
+                    if (xEle.Attribute("vehiclekey").Value.Equals(vehicleKey))
+                        xEle.Attribute("Pending").Value = "0";
+
+                    xDocResults = new XDocument(xEle);
+                    strResult.Append(xDocResults.ToString());
+                }
+
+                strResult.Insert(0, "<Vehicles>");
+                strResult.Append("</Vehicles>");
+
+                serverData = string.Empty;
+                serverData = strResult.ToString();
+
+                PopulateVehicleData();
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("UpdatePendingFlag: " + ex.Message);
+            }
+        }
+
+        #endregion
+
+        private void cmbRoofTop_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                ComboBoxItem cItem = (ComboBoxItem)cmbRoofTop.Items[cmbRoofTop.SelectedIndex];
+                string strRoofTop = cItem.Value.ToString();
+
+                if (strRoofTop != RooftopKey && bgWorkerBusy==false)
+                {
+                    ReloadDataFromServer();
+                    //PopulateVehicleData();
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.WriteLog("cmbRoofTop_SelectedIndexChanged: " + ex.Message);
+            }
+        }
+
+        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            Common.WriteLog("INFO: BackgroundWorker_DoWork started");
+            bgWorkerBusy = true;
+            GetVehicleDataFromServer();
+            Common.WriteLog("INFO: BackgroundWorker_DoWork End");
+        }
+
+        private void BackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            Common.WriteLog("INFO: BackgroundWorker_RunWorkerCompleted started");
+            PopulateVehicleMake(listMake);
+            cmbMake.Text = ResourceTxt.VehicleMakeAll;
+            cmbModel.Text = ResourceTxt.VehicleModelAll;
+            lblNoOfRecords.Visibility = Visibility.Visible;
+            lblNoOfRecordsValue.Visibility = Visibility.Visible;
+            Spinner.Visibility = Visibility.Hidden;
+            PopulateVehicleData();
+            bgWorkerBusy = false;
+            Common.WriteLog("INFO: BackgroundWorker_RunWorkerCompleted End");
+        }
+
+        private void listLoaderThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            Common.WriteLog("INFO: listLoaderThread_DoWork Started");
+            string serverData = (string)e.Argument;
+            BindVehicleData(serverData);
+            Common.WriteLog("INFO: listLoaderThread_DoWork End");
+        }
+
+        private void listLoaderThread_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            Common.WriteLog("INFO: listLoaderThread_RunWorkerCompleted Started");
+            Spinner.Visibility = Visibility.Hidden;
+            if (isGridView)
+            {
+                dtGrid.Items.Refresh();
+                dtGrid.Visibility = Visibility.Visible;
+                listiew.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                dtGrid.Visibility = Visibility.Hidden;
+                listiew.Visibility = Visibility.Visible;
+                listiew.Items.Refresh();
+            }
+            //cmbModel.Text = ResourceTxt.VehicleModelAll;
+            Common.WriteLog("INFO: listLoaderThread_RunWorkerCompleted Completed");
+        }
+
+        private void DataGridTemplateColumn_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show("asdsasadsad");
+        }
+        //#####################################################################################
+    }
+}
